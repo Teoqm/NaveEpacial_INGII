@@ -13,7 +13,7 @@ public class Loeder {
 
     public static BufferedImage imageLoder(String path){
 
-        BufferedImage image = null;
+
         try {
            return ImageIO.read(Loeder.class.getResource(path));
         }catch (Exception e){

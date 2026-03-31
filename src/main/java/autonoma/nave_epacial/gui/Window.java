@@ -1,5 +1,6 @@
 package autonoma.nave_epacial.gui;
 
+import autonoma.nave_epacial.images.Asst;
 import com.sun.source.doctree.StartElementTree;
 
 import javax.swing.*;
@@ -54,15 +55,18 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         g = bs.getDrawGraphics();
 
         //-------SE COMENZA DIBIJAR-------------------
-        g.setColor(new Color(220, 41, 41));
-        g.clearRect(0, 0, 100,100);
-        g.drawRect(0, 0, 100,100);
 
-        g.drawString(""+AVERAGEFPS, 100, 100);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+
         g.setColor(Color.BLACK);
+        g.drawImage(Asst.player, 0, 0, 60, 60, null);
         //------------
         g.dispose();
         bs.show();
+    }
+
+    private void init(){
+        Asst.init();
     }
 
     @Override
@@ -74,6 +78,7 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         long time = 0;
         int nanoSegundo= 1000000000;
 
+        init();
 
         while (running) {
 

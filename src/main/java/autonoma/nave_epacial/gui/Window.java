@@ -42,5 +42,80 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         add(canvas);
     }
 
+    private void updates() {}
 
+    private void draw() {
+
+        bs = canvas.getBufferStrategy();
+        if (bs == null) {
+            canvas.createBufferStrategy(3);
+            return;
+        }
+        g = bs.getDrawGraphics();
+
+        //-------SE COMENZA DIBIJAR-------------------
+        g.setColor(new Color(220, 41, 41));
+        g.clearRect(0, 0, 100,100);
+        g.drawRect(0, 0, 100,100);
+
+        g.drawString(""+AVERAGEFPS, 100, 100);
+        g.setColor(Color.BLACK);
+        //------------
+        g.dispose();
+        bs.show();
+    }
+
+    @Override
+    public void run() {
+
+        long now = 0;
+        long lastTime = System.nanoTime();
+        int frames = 0;
+        long time = 0;
+        int nanoSegundo= 1000000000;
+
+
+        while (running) {
+
+            now = System.nanoTime();
+            delta += (now - lastTime) / TARGETTIME;
+            time += (now - lastTime);
+            lastTime = now;
+
+            if (delta >= 1) {
+                updates();
+                draw();
+                delta--;
+                frames++;
+            }
+
+            if (time >= nanoSegundo) {
+
+                AVERAGEFPS = frames;
+                frames = 0;
+                time = 0;
+
+            }
+        }
+
+
+        stop();
+    }
+
+    public void start() {
+        thread = new Thread(this);
+        thread.start();
+        running = true;
+    }
+
+    private void stop() {
+
+        try {
+            thread.join();
+            running = false;
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+    }
 }

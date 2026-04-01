@@ -1,6 +1,7 @@
 package autonoma.nave_epacial.gui;
 
-import com.sun.source.doctree.StartElementTree;
+import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.states.GameState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +18,8 @@ public class Window  extends javax.swing.JFrame implements Runnable {
 
     private BufferStrategy bs;
     private Graphics g;
+
+    private GameState gameState;
 
     private final int FPS = 60;
     //teimepo en nano segundos
@@ -42,7 +45,10 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         add(canvas);
     }
 
-    private void updates() {}
+    private void updates() {
+
+        gameState.update();
+    }
 
     private void draw() {
 
@@ -54,15 +60,22 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         g = bs.getDrawGraphics();
 
         //-------SE COMENZA DIBIJAR-------------------
-        g.setColor(new Color(220, 41, 41));
-        g.clearRect(0, 0, 100,100);
-        g.drawRect(0, 0, 100,100);
 
-        g.drawString(""+AVERAGEFPS, 100, 100);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+
+        gameState.draw(g);
+
         g.setColor(Color.BLACK);
+        g.drawImage(Assets.player, 0, 0, 60, 60, null);
         //------------
         g.dispose();
         bs.show();
+    }
+
+    private void init(){
+        Assets.init();
+        gameState = new GameState();
+
     }
 
     @Override
@@ -74,6 +87,7 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         long time = 0;
         int nanoSegundo= 1000000000;
 
+        init();
 
         while (running) {
 

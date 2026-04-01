@@ -1,8 +1,7 @@
-package autonoma.nave_epacial.images;
+package autonoma.nave_epacial.graphics;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class Loeder {
 
@@ -13,7 +12,7 @@ public class Loeder {
 
     public static BufferedImage imageLoder(String path){
 
-        BufferedImage image = null;
+
         try {
            return ImageIO.read(Loeder.class.getResource(path));
         }catch (Exception e){

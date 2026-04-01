@@ -1,8 +1,7 @@
-package autonoma.nave_epacial.images;
+package autonoma.nave_epacial.graphics;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 public class Loeder {
 

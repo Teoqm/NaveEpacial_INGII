@@ -1,8 +1,8 @@
-package autonoma.nave_epacial.images;
+package autonoma.nave_epacial.graphics;
 
 import java.awt.image.BufferedImage;
 
-public class Asst {
+public class Assets {
 
     //clase que sirve para almasenar recursos que vamso a utlizar
 

@@ -21,6 +21,26 @@ public class Vector2D {
         return new Vector2D(x+vector.x,y+vector.y);
     }
 
+    public  Vector2D scale(double value) {
+
+        return new Vector2D(x*value,y*value);
+    }
+
+    public  void limit(double value) {
+
+        if(x>value){
+            x=value;
+        } else if(x< -value){
+            x=-value;
+        }
+        if(y>value){
+            y=value;
+
+        }else if(y< -value){
+            y=-value;
+        }
+
+    }
 
 
     public double getMagnitude() {

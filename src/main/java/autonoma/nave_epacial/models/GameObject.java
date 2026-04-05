@@ -25,6 +25,7 @@ public abstract class GameObject {
 
     public abstract void draw(Graphics g);
 
+    public Vector2D getPosition() {return this.position;}
 
     public void setPosition(Vector2D position) {
         this.position = position;

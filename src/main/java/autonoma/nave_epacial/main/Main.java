@@ -2,13 +2,11 @@ package autonoma.nave_epacial.main;
 
 import autonoma.nave_epacial.gui.Window;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    static void main() {
 
-
-       Window w = new Window();
-       w.start();
+    public static void main(String[] args) {
+        System.out.println("INICIANDO PROGRAMA 🚀");
+        Window w = new Window();
+        w.start();
     }
 }

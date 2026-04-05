@@ -29,8 +29,7 @@ public class KeyBoard implements KeyListener {
     public void keyTyped(KeyEvent e) {
 
         keys[e.getKeyCode()] = true;
-
-
+        System.out.println(e.getKeyChar());
 
     }
 

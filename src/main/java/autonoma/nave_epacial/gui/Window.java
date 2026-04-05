@@ -21,7 +21,7 @@ public class Window  extends javax.swing.JFrame implements Runnable {
     private Graphics g;
 
     private GameState gameState;
-    private KeyBoard keyboard;
+    private KeyBoard keyBoard;
 
     private final int FPS = 60;
     //teimepo en nano segundos
@@ -40,18 +40,18 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         setVisible(true);
 
         canvas = new Canvas();
-        keyboard = new KeyBoard();
+        keyBoard = new KeyBoard();
 
         canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMaximumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setFocusable(true);
         add(canvas);
-        canvas.addKeyListener(keyboard);
+        canvas.addKeyListener( keyBoard);
     }
 
     private void updates() {
-
+        keyBoard.update();
         gameState.update();
     }
 

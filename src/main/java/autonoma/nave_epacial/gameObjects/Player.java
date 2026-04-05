@@ -6,6 +6,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.gui.Window;
 import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.math.Vector2D;
 
@@ -41,13 +42,25 @@ public class Player extends MovingObject{
 		
 		velocity = velocity.add(acceleration);
 		
-		velocity.limit(maxVel);
-		
+		velocity = velocity.limit(maxVel);
+
 		heading = heading.setDirection(angle - Math.PI/2);
 		
 		position = position.add(velocity);
 		
-		
+		if(position.getX() > Window.WIDTH ){
+			position.setX(0);
+		}
+		if(position.getX() < 0){
+			position.setX(Window.WIDTH);
+		}
+		if(position.getY() > Window.HEIGHT ){
+			position.setY(0);
+		}
+		if(position.getY() < 0){
+			position.setY(Window.HEIGHT);
+		}
+
 	}
 	
 	
@@ -59,7 +72,7 @@ public class Player extends MovingObject{
 		at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
 		
 		at.rotate(angle, Assets.player.getWidth()/2, Assets.player.getHeight()/2);
-		
+
 		g2d.drawImage(Assets.player, at, null);
 		
 		

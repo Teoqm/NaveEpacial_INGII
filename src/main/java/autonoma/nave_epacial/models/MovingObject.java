@@ -11,12 +11,17 @@ public abstract class MovingObject extends GameObject {
     protected AffineTransform at;
     protected double angle;
     protected double maxVel;
+    protected int width;
+    protected int height;
+
 
     public MovingObject(Vector2D position,Vector2D velocity ,double maxVel,BufferedImage texture) {
         super (position,texture);
         this.velocity = velocity;
         this.maxVel = maxVel;
-        angle = 0;
+        this.width = texture.getWidth();
+        this.height = texture.getHeight();
+        this.angle = 0;
     }
 
 }

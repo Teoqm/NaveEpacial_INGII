@@ -60,7 +60,7 @@ public class Player extends MovingObject{
 
         at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
 
-        at.rotate(angle, Assets.player.getWidth()/2, Assets.player.getHeight()/2);
+        at.rotate(angle,this.width/2,this.height/2);
 
         g2d.drawImage(Assets.player, at, null);
 

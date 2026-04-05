@@ -1,6 +1,7 @@
 package autonoma.nave_epacial.gui;
 
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.states.GameState;
 
 import javax.swing.*;
@@ -20,6 +21,7 @@ public class Window  extends javax.swing.JFrame implements Runnable {
     private Graphics g;
 
     private GameState gameState;
+    private KeyBoard keyBoard;
 
     private final int FPS = 60;
     //teimepo en nano segundos
@@ -34,19 +36,23 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        setVisible(true);
-
         canvas = new Canvas();
+        keyBoard = new KeyBoard();
 
         canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMaximumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setFocusable(true);
+
         add(canvas);
+        canvas.addKeyListener(keyBoard);
+
+        setVisible(true);
+        canvas.requestFocus();
     }
 
     private void updates() {
-
+        keyBoard.update();
         gameState.update();
     }
 
@@ -61,12 +67,11 @@ public class Window  extends javax.swing.JFrame implements Runnable {
 
         //-------SE COMENZA DIBIJAR-------------------
 
-        g.fillRect(0, 0, WIDTH, HEIGHT);
-
-        gameState.draw(g);
-
         g.setColor(Color.BLACK);
-        g.drawImage(Assets.player, 0, 0, 60, 60, null);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        gameState.draw(g);
+        g.drawString("" + AVERAGEFPS, 10, 20);
+
         //------------
         g.dispose();
         bs.show();
@@ -117,9 +122,9 @@ public class Window  extends javax.swing.JFrame implements Runnable {
     }
 
     public void start() {
+        running = true;   //
         thread = new Thread(this);
-        thread.start();
-        running = true;
+        thread.start();   //
     }
 
     private void stop() {

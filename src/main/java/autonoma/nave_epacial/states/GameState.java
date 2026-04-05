@@ -18,9 +18,10 @@ public class GameState {
 
 
     public void update() {
+        player.update();
     }
 
     public void draw(Graphics g) {
-
+        player.draw(g);
     }
 }

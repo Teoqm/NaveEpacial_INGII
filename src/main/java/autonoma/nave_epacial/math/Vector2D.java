@@ -13,8 +13,8 @@ public class Vector2D {
 
     public Vector2D() {
 
-        x = 0.0;
-        y = 0.0;
+        x = 0;
+        y = 0;
 
     }
 
@@ -29,6 +29,6 @@ public class Vector2D {
     public void setX(double x) {
         this.x = x;
     }
-    public void setY(double y) {}
+    public void setY(double y) {this.y = y;}
 }
 

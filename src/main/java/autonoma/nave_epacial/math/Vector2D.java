@@ -17,6 +17,11 @@ public class Vector2D {
 
     }
 
+    public  Vector2D add(Vector2D vector) {
+        return new Vector2D(x+vector.x,y+vector.y);
+    }
+
+
 
     public double getMagnitude() {
         return Math.sqrt(x*x+y*y);

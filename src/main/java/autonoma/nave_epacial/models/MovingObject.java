@@ -1,7 +1,6 @@
 package autonoma.nave_epacial.models;
 
 import autonoma.nave_epacial.math.Vector2D;
-
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;

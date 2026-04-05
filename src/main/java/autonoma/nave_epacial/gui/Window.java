@@ -1,6 +1,7 @@
 package autonoma.nave_epacial.gui;
 
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.states.GameState;
 
 import javax.swing.*;
@@ -20,12 +21,14 @@ public class Window  extends javax.swing.JFrame implements Runnable {
     private Graphics g;
 
     private GameState gameState;
+    private KeyBoard keyboard;
 
     private final int FPS = 60;
     //teimepo en nano segundos
     private double TARGETTIME = 100000000/FPS;
     private double delta = 0;
     private int AVERAGEFPS = FPS;
+
 
     public Window() {
         setTitle("Nave-Epacial");
@@ -37,12 +40,14 @@ public class Window  extends javax.swing.JFrame implements Runnable {
         setVisible(true);
 
         canvas = new Canvas();
+        keyboard = new KeyBoard();
 
         canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMaximumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setFocusable(true);
         add(canvas);
+        canvas.addKeyListener(keyboard);
     }
 
     private void updates() {

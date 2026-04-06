@@ -18,15 +18,16 @@ public class GameState {
 	}
 
 	public void update() {
-		for(int i = 0; i < this.movingObjects.size(); ++i) {
-			((MovingObject)this.movingObjects.get(i)).update();
+
+		for(MovingObject m : this.movingObjects) {
+			m.update();
 		}
 
 	}
 
 	public void draw(Graphics g) {
-		for(int i = 0; i < this.movingObjects.size(); ++i) {
-			((MovingObject)this.movingObjects.get(i)).draw(g);
+		for( MovingObject m : this.movingObjects) {
+			m.draw(g);
 		}
 
 	}

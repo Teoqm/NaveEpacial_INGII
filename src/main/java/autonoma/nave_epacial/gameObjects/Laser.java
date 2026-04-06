@@ -21,8 +21,8 @@ public class Laser extends MovingObject {
 
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D)g;
-        this.at = AffineTransform.getTranslateInstance(this.position.getX() - (double)(this.width / 2), this.position.getY());
-        this.at.rotate(this.angle, (double)(this.width / 2), (double)0.0F);
+        this.at = AffineTransform.getTranslateInstance(this.position.getX() - (this.width / 2), this.position.getY());
+        this.at.rotate(this.angle, (this.width / 2));
         g2d.drawImage(this.texture, this.at, (ImageObserver)null);
     }
 }

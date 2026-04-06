@@ -17,4 +17,8 @@ public class Constants {
     //Laser propieties
 
     public static final double LASER_VEL=15.0;
+
+    //Meteor propieties
+
+    public static final double METEOR_VEL=2.0;
 }

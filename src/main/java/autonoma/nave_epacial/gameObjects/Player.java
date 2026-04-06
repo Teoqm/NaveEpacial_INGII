@@ -58,6 +58,7 @@ public class Player extends MovingObject {
         this.velocity = this.velocity.limit(this.maxVel);
         this.heading = this.heading.setDirection(this.angle - (Math.PI / 2D));
         this.position = this.position.add(this.velocity);
+
         if (this.position.getX() > Constants.WIDTH) {
             this.position.setX((double)0.0F);
         }
@@ -90,7 +91,7 @@ public class Player extends MovingObject {
 
         this.at = AffineTransform.getTranslateInstance(this.position.getX(), this.position.getY());
         this.at.rotate(this.angle, (double)(this.width / 2), (double)(this.height / 2));
-        g2d.drawImage(Assets.player, this.at, (ImageObserver)null);
+        g2d.drawImage(texture, this.at, (ImageObserver)null);
     }
 
     public Vector2D getCenter() {

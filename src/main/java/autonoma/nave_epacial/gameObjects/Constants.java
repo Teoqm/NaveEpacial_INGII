@@ -21,4 +21,11 @@ public class Constants {
     //Meteor propieties
 
     public static final double METEOR_VEL=2.0;
+
+    //Ufo propieties
+
+    public static final int NODE_RADIUS=160;
+    public static final int UFO_MASS=60;
+    public static final int UFO_MAX_VEL=3;
+    public static final int UFO_FIRE_RATE=1000;
 }

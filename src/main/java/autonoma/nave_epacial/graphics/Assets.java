@@ -17,6 +17,10 @@ public class Assets {
 
 	public static BufferedImage[] exp= new BufferedImage[9];
 
+	//enemies
+
+	public static BufferedImage ufo;
+
 	//meteors
 
 	public static BufferedImage[] bigs = new BufferedImage[4];
@@ -50,6 +54,8 @@ public class Assets {
 
 		for (int i = 0; i < exp.length; i++)
 			exp[i]=Loader.ImageLoader("/explosion/"+i+".png");
+
+		ufo = Loader.ImageLoader("/ships/ufoRed.png");
 	}
 	
 }

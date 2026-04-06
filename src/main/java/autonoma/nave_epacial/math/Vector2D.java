@@ -14,7 +14,11 @@ public class Vector2D {
 		x = 0;
 		y = 0;
 	}	
-	
+
+	public double getAngle(){
+		return Math.asin(y/getMagnitude());
+
+	}
 	public Vector2D add(Vector2D v)
 	{
 		return new Vector2D(x + v.getX(), y + v.getY());

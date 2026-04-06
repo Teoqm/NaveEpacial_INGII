@@ -4,6 +4,7 @@ package autonoma.nave_epacial.gameObjects;
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.math.Vector2D;
+import autonoma.nave_epacial.states.GameState;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -12,18 +13,38 @@ import java.awt.image.ImageObserver;
 
 
 public class Player extends MovingObject {
-    private Vector2D heading = new Vector2D((double)0.0F, (double)1.0F);
-    private Vector2D acceleration = new Vector2D();
-    //conatnte de aceleracion
+    private Vector2D heading;
+    private Vector2D acceleration;
     private final double ACC = 0.2;
     private final double DELTAANGLE = 0.1;
     private boolean accelerating = false;
+    private GameState gameState;
+    private long time;
+    private long lastTime;
 
-    public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture) {
+    public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
         super(position, velocity, maxVel, texture);
+        this.gameState = gameState;
+        this.heading = new Vector2D((double)0.0F, (double)1.0F);
+        this.acceleration = new Vector2D();
+        this.time = 0L;
+        this.lastTime = System.currentTimeMillis();
     }
 
     public void update() {
+
+        //tiempo de disparo
+        this.time += System.currentTimeMillis() - this.lastTime;
+        this.lastTime = System.currentTimeMillis();
+        if (KeyBoard.SHOOT && this.time > 200) {
+            this.gameState.getMovingObjects().add(0, new Laser(
+                    this.getCenter().add(this.heading.scale((double)this.width)),
+                    this.heading, (double)10.0, this.angle,
+                    Assets.redLaser));
+            this.time = 0;
+        }
+
+
         if (KeyBoard.RIGHT) {
             this.angle += 0.1;
         }
@@ -79,6 +100,11 @@ public class Player extends MovingObject {
         this.at = AffineTransform.getTranslateInstance(this.position.getX(), this.position.getY());
         this.at.rotate(this.angle, (double)(this.width / 2), (double)(this.height / 2));
         g2d.drawImage(Assets.player, this.at, (ImageObserver)null);
+    }
+
+    public Vector2D getCenter() {
+
+        return new Vector2D(this.position.getX() + this.width / 2, this.position.getY() + this.height / 2);
     }
 }
 

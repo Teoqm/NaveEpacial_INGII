@@ -76,6 +76,7 @@ public class Player extends MovingObject {
         }
 
         fireRate.update();
+        collidesWith();
     }
 
     public void draw(Graphics g) {
@@ -94,9 +95,5 @@ public class Player extends MovingObject {
         g2d.drawImage(texture, this.at, (ImageObserver)null);
     }
 
-    public Vector2D getCenter() {
-
-        return new Vector2D(this.position.getX() + this.width / 2, this.position.getY() + this.height / 2);
-    }
 }
 

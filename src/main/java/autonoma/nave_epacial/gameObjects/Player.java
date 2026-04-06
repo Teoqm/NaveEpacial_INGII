@@ -32,18 +32,12 @@ public class Player extends MovingObject {
     }
 
     public void update() {
-
-        //tiempo de disparo
         this.time += System.currentTimeMillis() - this.lastTime;
         this.lastTime = System.currentTimeMillis();
-        if (KeyBoard.SHOOT && this.time > 200) {
-            this.gameState.getMovingObjects().add(0, new Laser(
-                    this.getCenter().add(this.heading.scale((double)this.width)),
-                    this.heading, (double)10.0, this.angle,
-                    Assets.redLaser));
-            this.time = 0;
+        if (KeyBoard.SHOOT && this.time > 200L) {
+            this.gameState.getMovingObjects().add(0, new Laser(this.getCenter().add(this.heading.scale((double)this.width)), this.heading, (double)10.0F, this.angle, Assets.redLaser));
+            this.time = 0L;
         }
-
 
         if (KeyBoard.RIGHT) {
             this.angle += 0.1;

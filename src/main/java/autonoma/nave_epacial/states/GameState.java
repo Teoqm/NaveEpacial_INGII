@@ -22,6 +22,38 @@ public class GameState {
 		startWave();
 	}
 
+	public void divideMeteor(Meteor meteor) {
+		Size size = meteor.getSize();
+
+		BufferedImage[] textures=size.textures;
+
+		Size newSize = null;
+
+		switch (size){
+			case BIG:
+				newSize = Size.MED;
+				break;
+			case MED:
+				newSize=Size.SMALL;
+				break;
+			case SMALL:
+				newSize=Size.TINY;
+				break;
+			default:
+				return;
+		}
+		for (int i = 0; i < size.quantity; i++) {
+			movingObjects.add(new Meteor(
+					meteor.getPosition(),
+					new Vector2D(0,1).setDirection(Math.random()*Math.PI*2),
+					Constants.METEOR_VEL*Math.random()+1,
+					textures[(int)(Math.random()*textures.length)],
+					this,
+					newSize
+			));
+		}
+	}
+
 	private void startWave(){
 
 		double x, y;

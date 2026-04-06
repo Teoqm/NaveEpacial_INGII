@@ -17,6 +17,7 @@ public class Meteor extends MovingObject {
     public Meteor(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState, Size size) {
         super(position, velocity, maxVel, texture, gameState);
         this.size = size;
+        this.velocity=velocity.scale(maxVel);
     }
 
     @Override
@@ -24,22 +25,28 @@ public class Meteor extends MovingObject {
         position=position.add(velocity);
 
         if (this.position.getX() > Constants.WIDTH) {
-            this.position.setX((double)0.0F);
+            this.position.setX((double)-width);
         }
 
         if (this.position.getY() > Constants.HEIGHT) {
-            this.position.setY((double)0.0F);
+            this.position.setY((double)-height);
         }
 
-        if (this.position.getX() < (double)0.0F) {
+        if (this.position.getX() < (double)-width) {
             this.position.setX(Constants.WIDTH);
         }
 
-        if (this.position.getY() < (double)0.0F) {
+        if (this.position.getY() < (double)-height) {
             this.position.setY(Constants.HEIGHT);
         }
 
         angle += Constants.DELTAANGLE/2;
+    }
+
+    @Override
+    public void destroy() {
+        gameState.divideMeteor(this);
+        super.destroy();
     }
 
     @Override

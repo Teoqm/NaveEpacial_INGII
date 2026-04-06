@@ -18,25 +18,21 @@ public class Player extends MovingObject {
     private final double ACC = 0.2;
     private final double DELTAANGLE = 0.1;
     private boolean accelerating = false;
-    private GameState gameState;
-    private long time;
-    private long lastTime;
+    private Chronometer fireRate;
+
 
     public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
-        super(position, velocity, maxVel, texture);
-        this.gameState = gameState;
+        super(position, velocity, maxVel, texture,  gameState);
         this.heading = new Vector2D((double)0.0F, (double)1.0F);
         this.acceleration = new Vector2D();
-        this.time = 0L;
-        this.lastTime = System.currentTimeMillis();
+        fireRate = new Chronometer();
     }
 
     public void update() {
-        this.time += System.currentTimeMillis() - this.lastTime;
-        this.lastTime = System.currentTimeMillis();
-        if (KeyBoard.SHOOT && this.time > 200L) {
-            this.gameState.getMovingObjects().add(0, new Laser(this.getCenter().add(this.heading.scale((double)this.width)), this.heading, (double)10.0F, this.angle, Assets.redLaser));
-            this.time = 0L;
+
+        if (KeyBoard.SHOOT && !fireRate.isRunning()) {
+            this.gameState.getMovingObjects().add(0, new Laser(this.getCenter().add(this.heading.scale((double)this.width)), this.heading, Constants.LASER_VEL, this.angle, Assets.blueLaser, gameState));
+            fireRate.run(Constants.FIRERATE);
         }
 
         if (KeyBoard.RIGHT) {
@@ -48,11 +44,11 @@ public class Player extends MovingObject {
         }
 
         if (KeyBoard.UP) {
-            this.acceleration = this.heading.scale(0.2);
+            this.acceleration = this.heading.scale(Constants.ACC);
             this.accelerating = true;
         } else {
             if (this.velocity.getMagnitude() != (double)0.0F) {
-                this.acceleration = this.velocity.scale((double)-1.0F).normalize().scale(0.1);
+                this.acceleration = this.velocity.scale((double)-1.0F).normalize().scale(Constants.ACC/2);
             }
 
             this.accelerating = false;
@@ -62,22 +58,23 @@ public class Player extends MovingObject {
         this.velocity = this.velocity.limit(this.maxVel);
         this.heading = this.heading.setDirection(this.angle - (Math.PI / 2D));
         this.position = this.position.add(this.velocity);
-        if (this.position.getX() > (double)800.0F) {
+        if (this.position.getX() > Constants.WIDTH) {
             this.position.setX((double)0.0F);
         }
 
-        if (this.position.getY() > (double)600.0F) {
+        if (this.position.getY() > Constants.HEIGHT) {
             this.position.setY((double)0.0F);
         }
 
         if (this.position.getX() < (double)0.0F) {
-            this.position.setX((double)800.0F);
+            this.position.setX(Constants.WIDTH);
         }
 
         if (this.position.getY() < (double)0.0F) {
-            this.position.setY((double)600.0F);
+            this.position.setY(Constants.HEIGHT);
         }
 
+        fireRate.update();
     }
 
     public void draw(Graphics g) {

@@ -1,6 +1,6 @@
 package autonoma.nave_epacial.states;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.ArrayList;
 
 import autonoma.nave_epacial.gameObjects.MovingObject;
@@ -25,6 +25,10 @@ public class GameState {
 	}
 
 	public void draw(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
 		for(int i = 0; i < this.movingObjects.size(); ++i) {
 			((MovingObject)this.movingObjects.get(i)).draw(g);
 		}

@@ -47,6 +47,7 @@ public abstract class MovingObject extends GameObject {
 
     private void objectCollision(MovingObject a, MovingObject b){
         if (!(a instanceof Meteor && b instanceof Meteor)){
+            gameState.playExplosion(getCenter());
             a.destroy();
             b.destroy();
         }

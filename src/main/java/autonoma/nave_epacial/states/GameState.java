@@ -5,12 +5,14 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import autonoma.nave_epacial.gameObjects.*;
+import autonoma.nave_epacial.graphics.Animation;
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.math.Vector2D;
 
 public class GameState {
 	private Player player;
 	private ArrayList<MovingObject> movingObjects = new ArrayList();
+	private ArrayList<Animation> explosions = new ArrayList();
 
 	private int meteors;
 
@@ -76,9 +78,26 @@ public class GameState {
 		meteors++;
 	}
 
+	public void playExplosion(Vector2D position){
+		explosions.add(new Animation(
+				Assets.exp,
+				50,
+				position.subtract(new Vector2D((double) Assets.exp[0].getWidth() /2, (double) Assets.exp[0].getHeight() /2))
+		));
+	}
+
 	public void update() {
 		for(int i = 0; i < this.movingObjects.size(); ++i) {
 			((MovingObject)this.movingObjects.get(i)).update();
+		}
+
+		for(int i = 0; i < this.explosions.size(); ++i) {
+			Animation anim= explosions.get(i);
+			anim.update();
+
+			if (!anim.isRunning()) {
+				explosions.remove(i);
+			}
 		}
 
 		for(int i = 0; i < this.movingObjects.size(); ++i){
@@ -95,6 +114,16 @@ public class GameState {
 
 		for(int i = 0; i < this.movingObjects.size(); ++i) {
 			((MovingObject)this.movingObjects.get(i)).draw(g);
+		}
+
+		for(int i = 0; i < this.explosions.size(); ++i) {
+			Animation anim = explosions.get(i);
+			g2d.drawImage(
+					anim.getCurrentFrame(),
+					(int) anim.getPosition().getX(),
+					(int) anim.getPosition().getY(),
+					null
+			);
 		}
 
 	}

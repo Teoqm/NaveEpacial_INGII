@@ -1,5 +1,6 @@
 package autonoma.nave_epacial.states;
 
+import autonoma.nave_epacial.Io.ScoreData;
 import autonoma.nave_epacial.Ui.Action;
 import autonoma.nave_epacial.Ui.Button;
 import autonoma.nave_epacial.gameObjects.Constants;
@@ -9,6 +10,8 @@ import autonoma.nave_epacial.math.Vector2D;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class ScoreState extends State{
 

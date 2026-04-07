@@ -1,5 +1,7 @@
 package autonoma.nave_epacial.gameObjects;
 
+import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.math.Vector2D;
 import autonoma.nave_epacial.states.GameState;
 
@@ -17,6 +19,8 @@ public abstract class MovingObject extends GameObject {
     protected int height;
     protected GameState gameState;
 
+    private Sound explosion;
+
     public MovingObject(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
         super(position, texture);
         this.velocity = velocity;
@@ -24,7 +28,8 @@ public abstract class MovingObject extends GameObject {
         this.gameState = gameState;
         this.width = texture.getWidth();
         this.height = texture.getHeight();
-        this.angle = (double)0.0F;
+        this.angle = 0;
+        explosion = new Sound(Assets.explosion);
     }
 
     protected void collidesWith(){
@@ -64,6 +69,8 @@ public abstract class MovingObject extends GameObject {
 
     protected void destroy(){
         gameState.getMovingObjects().remove(this);
+        if(!(this instanceof Laser))
+            explosion.play();
     }
 
     protected Vector2D getCenter() {

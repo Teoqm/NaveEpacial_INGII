@@ -2,6 +2,7 @@ package autonoma.nave_epacial.gameObjects;
 
 
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.math.Vector2D;
 import autonoma.nave_epacial.states.GameState;
@@ -21,6 +22,9 @@ public class Player extends MovingObject{
 
     private boolean spawning, visible;
 
+    private Sound shoot, lose;
+
+
     private Chronometer spawnTime, flickerTime;
 
     public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
@@ -30,6 +34,8 @@ public class Player extends MovingObject{
         fireRate = new Chronometer();
         spawnTime = new Chronometer();
         flickerTime = new Chronometer();
+        shoot = new Sound(Assets.playerShoot);
+        lose = new Sound(Assets.playerLoose);
     }
 
     @Override
@@ -63,8 +69,13 @@ public class Player extends MovingObject{
                     gameState
             ));
             fireRate.run(Constants.FIRERATE);
+
+            shoot.play();
         }
 
+        if(shoot.getFramePosition() > 8500){
+            shoot.stop();
+        }
 
         if(KeyBoard.RIGHT)
             angle += Constants.DELTAANGLE;
@@ -113,6 +124,7 @@ public class Player extends MovingObject{
         spawnTime.run(Constants.SPAWNING_TIME);
         resetValues();
         gameState.subtractLife();
+        lose.play();
     }
 
     private void resetValues() {

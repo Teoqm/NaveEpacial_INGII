@@ -10,7 +10,6 @@ import autonoma.nave_epacial.math.Vector2D;
 import autonoma.nave_epacial.states.GameState;
 
 public class Message {
-    private GameState gameState;
     private float alpha;
     private String text;
     private Vector2D position;
@@ -19,18 +18,19 @@ public class Message {
     private boolean fade;
     private Font font;
     private final float deltaAlpha = 0.01f;
+    private boolean dead;
 
     public Message(Vector2D position, boolean fade, String text, Color color,
-                   boolean center, Font font, GameState gameState) {
+                   boolean center, Font font) {
         this.font = font;
-        this.gameState = gameState;
         this.text = text;
         this.position = position;
         this.fade = fade;
         this.color = color;
         this.center = center;
+        this.dead = false;
 
-        if(fade)
+        if (fade)
             alpha = 1;
         else
             alpha = 0;
@@ -47,22 +47,24 @@ public class Message {
 
         position.setY(position.getY() - 1);
 
-        if(fade)
+        if (fade)
             alpha -= deltaAlpha;
         else
             alpha += deltaAlpha;
 
-        if(fade && alpha < 0) {
-            gameState.getMessages().remove(this);
+        if (fade && alpha < 0) {
+            dead = true;
         }
 
-        if(!fade && alpha > 1) {
+        if (!fade && alpha > 1) {
             fade = true;
             alpha = 1;
         }
 
-
     }
 
+    public boolean isDead() {
+        return dead;
+    }
 
 }

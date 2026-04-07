@@ -7,7 +7,7 @@ public class Chronometer {
 
     public Chronometer() {
         this.delta = 0;
-        this.lastTime = 0;
+        this.lastTime = System.currentTimeMillis();
         this.running = false;
     }
 

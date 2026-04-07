@@ -122,9 +122,13 @@ public class Player extends MovingObject{
     public void destroy() {
         spawning = true;
         spawnTime.run(Constants.SPAWNING_TIME);
-        resetValues();
-        gameState.subtractLife();
         lose.play();
+        if(!gameState.subtractLife()) {
+            gameState.gameOver();
+            super.destroy();
+        }
+        resetValues();
+
     }
 
     private void resetValues() {

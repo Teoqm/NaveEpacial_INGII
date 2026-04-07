@@ -28,6 +28,9 @@ public class Assets {
 	public static BufferedImage[] smalls = new BufferedImage[2];
 	public static BufferedImage[] tinies = new BufferedImage[2];
 
+	public static BufferedImage[] numbers = new BufferedImage[11];
+	public static BufferedImage life;
+
 	public static void init()
 	{
 		player = Loader.ImageLoader("/ships/player_1.png");
@@ -56,6 +59,12 @@ public class Assets {
 			exp[i]=Loader.ImageLoader("/explosion/"+i+".png");
 
 		ufo = Loader.ImageLoader("/ships/ufoRed.png");
+
+		for(int i = 0; i < numbers.length; ++i) {
+			numbers[i] = Loader.ImageLoader("/numbers/" + i + ".png");
+		}
+
+		life = Loader.ImageLoader("/others/life.png");
 	}
 	
 }

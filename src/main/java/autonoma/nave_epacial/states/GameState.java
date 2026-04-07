@@ -13,7 +13,7 @@ public class GameState {
 	private Player player;
 	private ArrayList<MovingObject> movingObjects = new ArrayList();
 	private ArrayList<Animation> explosions = new ArrayList();
-
+	private int score = 0;
 	private int meteors;
 
 	public GameState() {
@@ -22,6 +22,10 @@ public class GameState {
 
 		meteors = 2;
 		startWave();
+	}
+
+	public void addScore(int valor) {
+		this.score += valor;
 	}
 
 	public void divideMeteor(Meteor meteor) {

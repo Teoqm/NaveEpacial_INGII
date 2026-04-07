@@ -23,7 +23,7 @@ public class Player extends MovingObject {
 
     public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
         super(position, velocity, maxVel, texture,  gameState);
-        this.heading = new Vector2D((double)0.0F, (double)1.0F);
+        this.heading = new Vector2D(0, 1);
         this.acceleration = new Vector2D();
         fireRate = new Chronometer();
     }

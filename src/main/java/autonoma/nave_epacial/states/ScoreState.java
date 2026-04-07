@@ -1,5 +1,6 @@
 package autonoma.nave_epacial.states;
 
+import autonoma.nave_epacial.Io.JSONParser;
 import autonoma.nave_epacial.Io.ScoreData;
 import autonoma.nave_epacial.Ui.Action;
 import autonoma.nave_epacial.Ui.Button;
@@ -9,6 +10,8 @@ import autonoma.nave_epacial.graphics.Text;
 import autonoma.nave_epacial.math.Vector2D;
 
 import java.awt.*;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -47,6 +50,19 @@ public class ScoreState extends State{
 
         highScores = new PriorityQueue<ScoreData>(10, scoreComparator);
 
+        try {
+            ArrayList<ScoreData> dataLst = JSONParser.readFile();
+
+            for (ScoreData d : dataLst) {
+                highScores.add(d);
+            }
+
+            while (highScores.size()>10){
+                highScores.poll();
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

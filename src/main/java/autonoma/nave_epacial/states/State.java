@@ -1,6 +1,7 @@
 package autonoma.nave_epacial.states;
 
 import java.awt.*;
+import java.io.IOException;
 
 public abstract class State {
 
@@ -12,7 +13,7 @@ public abstract class State {
     }
 
 
-    public abstract void update();
+    public abstract void update() throws IOException;
     public abstract void draw(Graphics g);
 
 }

@@ -2,8 +2,12 @@ package autonoma.nave_epacial.states;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import autonoma.nave_epacial.Io.JSONParser;
+import autonoma.nave_epacial.Io.ScoreData;
 import autonoma.nave_epacial.gameObjects.*;
 import autonoma.nave_epacial.graphics.Animation;
 import autonoma.nave_epacial.graphics.Assets;
@@ -166,8 +170,7 @@ public class GameState extends State{
 	}
 
 
-	public void update()
-	{
+	public void update() throws IOException {
 
 		for(int i = 0; i < movingObjects.size(); i++) {
 
@@ -191,7 +194,17 @@ public class GameState extends State{
 		}
 
 		if(gameOver && !gameOverTimer.isRunning()) {
-			State.changeState(new MenuState());
+            try {
+                ArrayList<ScoreData> dataList = JSONParser.readFile();
+				dataList.add(new ScoreData(score));
+				JSONParser.writeFile(dataList);
+
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+
+            State.changeState(new MenuState());
 		}
 
 

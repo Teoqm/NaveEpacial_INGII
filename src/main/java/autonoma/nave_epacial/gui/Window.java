@@ -12,6 +12,7 @@ import autonoma.nave_epacial.states.State;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.io.IOException;
 
 public class Window extends JFrame implements Runnable{
 
@@ -65,7 +66,11 @@ public class Window extends JFrame implements Runnable{
     private void update(){
         keyBoard.update();
 
-        State.getCurrentState().update();
+        try {
+            State.getCurrentState().update();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void draw(){

@@ -1,5 +1,8 @@
 package autonoma.nave_epacial.gameObjects;
 
+import javax.swing.filechooser.FileSystemView;
+import java.nio.file.FileSystem;
+import org.json.JSONObject;
 public class Constants {
 
     // frame dimensions
@@ -56,6 +59,6 @@ public class Constants {
     public static final String SCORE = "SCORE";
     public static final String DATE = "DATE";
 
-
+    public static final String SCORE_PATH = FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath()+ "//NaveEspacial_INGII//data.json";
 
 }

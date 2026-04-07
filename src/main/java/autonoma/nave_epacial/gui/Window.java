@@ -77,6 +77,7 @@ public class Window extends JFrame implements Runnable{
 
         gameState.draw(g);
 
+        g.setColor(Color.WHITE);
         g.drawString(""+AVERAGEFPS, 10, 20);
 
         //---------------------

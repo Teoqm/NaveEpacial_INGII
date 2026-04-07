@@ -11,89 +11,150 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 
+public class Player extends MovingObject{
 
-public class Player extends MovingObject {
     private Vector2D heading;
     private Vector2D acceleration;
-    private final double ACC = 0.2;
-    private final double DELTAANGLE = 0.1;
+
     private boolean accelerating = false;
     private Chronometer fireRate;
 
+    private boolean spawning, visible;
+
+    private Chronometer spawnTime, flickerTime;
 
     public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
-        super(position, velocity, maxVel, texture,  gameState);
-        this.heading = new Vector2D((double)0.0F, (double)1.0F);
-        this.acceleration = new Vector2D();
+        super(position, velocity, maxVel, texture, gameState);
+        heading = new Vector2D(0, 1);
+        acceleration = new Vector2D();
         fireRate = new Chronometer();
+        spawnTime = new Chronometer();
+        flickerTime = new Chronometer();
     }
 
-    public void update() {
+    @Override
+    public void update()
+    {
 
-        if (KeyBoard.SHOOT && !fireRate.isRunning()) {
-            this.gameState.getMovingObjects().add(0, new Laser(this.getCenter().add(this.heading.scale((double)this.width)), this.heading, Constants.LASER_VEL, this.angle, Assets.blueLaser, gameState));
+        if(!spawnTime.isRunning()) {
+            spawning = false;
+            visible = true;
+        }
+
+        if(spawning) {
+
+            if(!flickerTime.isRunning()) {
+
+                flickerTime.run(Constants.FLICKER_TIME);
+                visible = !visible;
+
+            }
+
+        }
+
+        if(KeyBoard.SHOOT &&  !fireRate.isRunning() && !spawning)
+        {
+            gameState.getMovingObjects().add(0,new Laser(
+                    getCenter().add(heading.scale(width)),
+                    heading,
+                    Constants.LASER_VEL,
+                    angle,
+                    Assets.blueLaser,
+                    gameState
+            ));
             fireRate.run(Constants.FIRERATE);
         }
 
-        if (KeyBoard.RIGHT) {
-            this.angle += 0.1;
+
+        if(KeyBoard.RIGHT)
+            angle += Constants.DELTAANGLE;
+        if(KeyBoard.LEFT)
+            angle -= Constants.DELTAANGLE;
+
+        if(KeyBoard.UP)
+        {
+            acceleration = heading.scale(Constants.ACC);
+            accelerating = true;
+        }else
+        {
+            if(velocity.getMagnitude() != 0)
+                acceleration = (velocity.scale(-1).normalize()).scale(Constants.ACC/2);
+            accelerating = false;
         }
 
-        if (KeyBoard.LEFT) {
-            this.angle -= 0.1;
-        }
+        velocity = velocity.add(acceleration);
 
-        if (KeyBoard.UP) {
-            this.acceleration = this.heading.scale(Constants.ACC);
-            this.accelerating = true;
-        } else {
-            if (this.velocity.getMagnitude() != (double)0.0F) {
-                this.acceleration = this.velocity.scale((double)-1.0F).normalize().scale(Constants.ACC/2);
-            }
+        velocity = velocity.limit(maxVel);
 
-            this.accelerating = false;
-        }
+        heading = heading.setDirection(angle - Math.PI/2);
 
-        this.velocity = this.velocity.add(this.acceleration);
-        this.velocity = this.velocity.limit(this.maxVel);
-        this.heading = this.heading.setDirection(this.angle - (Math.PI / 2D));
-        this.position = this.position.add(this.velocity);
+        position = position.add(velocity);
 
-        if (this.position.getX() > Constants.WIDTH) {
-            this.position.setX((double)0.0F);
-        }
+        if(position.getX() > Constants.WIDTH)
+            position.setX(0);
+        if(position.getY() > Constants.HEIGHT)
+            position.setY(0);
 
-        if (this.position.getY() > Constants.HEIGHT) {
-            this.position.setY((double)0.0F);
-        }
+        if(position.getX() < -width)
+            position.setX(Constants.WIDTH);
+        if(position.getY() < -height)
+            position.setY(Constants.HEIGHT);
 
-        if (this.position.getX() < (double)0.0F) {
-            this.position.setX(Constants.WIDTH);
-        }
-
-        if (this.position.getY() < (double)0.0F) {
-            this.position.setY(Constants.HEIGHT);
-        }
 
         fireRate.update();
+        spawnTime.update();
+        flickerTime.update();
         collidesWith();
     }
 
-    public void draw(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g;
-        AffineTransform at1 = AffineTransform.getTranslateInstance(this.position.getX() + (double)(this.width / 2) + 15, this.position.getY() + (this.height / 2) + 15);
-        AffineTransform at2 = AffineTransform.getTranslateInstance(this.position.getX() + 5, this.position.getY() + (this.height / 2) + 15);
-        at1.rotate(this.angle, -15, -15);
-        at2.rotate(this.angle, (this.width / 2 - 5), -15);
-        if (this.accelerating) {
-            g2d.drawImage(Assets.speed, at1, (ImageObserver)null);
-            g2d.drawImage(Assets.speed, at2, (ImageObserver)null);
-        }
-
-        this.at = AffineTransform.getTranslateInstance(this.position.getX(), this.position.getY());
-        this.at.rotate(this.angle, (double)(this.width / 2), (double)(this.height / 2));
-        g2d.drawImage(texture, this.at, (ImageObserver)null);
+    @Override
+    public void destroy() {
+        spawning = true;
+        spawnTime.run(Constants.SPAWNING_TIME);
+        resetValues();
+        gameState.subtractLife();
     }
 
-}
+    private void resetValues() {
 
+        angle = 0;
+        velocity = new Vector2D();
+        position = new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
+                Constants.HEIGHT/2 - Assets.player.getHeight()/2);
+    }
+
+    @Override
+    public void draw(Graphics g) {
+
+        if(!visible)
+            return;
+
+        Graphics2D g2d = (Graphics2D)g;
+
+        AffineTransform at1 = AffineTransform.getTranslateInstance(position.getX() + width/2 + 5,
+                position.getY() + height/2 + 10);
+
+        AffineTransform at2 = AffineTransform.getTranslateInstance(position.getX() + 5, position.getY() + height/2 + 10);
+
+        at1.rotate(angle, -5, -10);
+        at2.rotate(angle, width/2 -5, -10);
+
+        if(accelerating)
+        {
+            g2d.drawImage(Assets.speed, at1, null);
+            g2d.drawImage(Assets.speed, at2, null);
+        }
+
+
+
+        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+
+        at.rotate(angle, width/2, height/2);
+
+        g2d.drawImage(texture, at, null);
+
+    }
+
+    public boolean isSpawning() {return spawning;}
+
+}

@@ -7,22 +7,27 @@ import java.util.ArrayList;
 import autonoma.nave_epacial.gameObjects.*;
 import autonoma.nave_epacial.graphics.Animation;
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Text;
 import autonoma.nave_epacial.math.Vector2D;
 
 public class GameState {
 	private Player player;
+	public static final Vector2D PLAYER_START_POSITION = new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
+			Constants.HEIGHT/2 - Assets.player.getHeight()/2);
 	private ArrayList<MovingObject> movingObjects = new ArrayList<MovingObject>();
 	private ArrayList<Animation> explosions = new ArrayList<Animation>();
+	private ArrayList<Message> messages = new ArrayList<Message>();
 
 	private int score = 0;
 	private int lives = 3;
 
 	private int meteors;
 
+	private int waves = 1;
+
 	public GameState()
 	{
-		player = new Player(new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
-				Constants.HEIGHT/2 - Assets.player.getHeight()/2), new Vector2D(),
+		player = new Player(PLAYER_START_POSITION, new Vector2D(),
 				Constants.PLAYER_MAX_VEL, Assets.player, this);
 
 		movingObjects.add(player);
@@ -31,35 +36,38 @@ public class GameState {
 		startWave();
 	}
 
-	public void addScore(int valor) {
-		this.score += valor;
+	public void addScore(int value, Vector2D position) {
+		score += value;
+		messages.add(new Message(position, true, "+"+value+" score", Color.WHITE, false, Assets.fontMed, this));
 	}
 
-	public void divideMeteor(Meteor meteor) {
+	public void divideMeteor(Meteor meteor){
+
 		Size size = meteor.getSize();
 
-		BufferedImage[] textures=size.textures;
+		BufferedImage[] textures = size.textures;
 
 		Size newSize = null;
 
-		switch (size){
+		switch(size){
 			case BIG:
-				newSize = Size.MED;
+				newSize =  Size.MED;
 				break;
 			case MED:
-				newSize=Size.SMALL;
+				newSize = Size.SMALL;
 				break;
 			case SMALL:
-				newSize=Size.TINY;
+				newSize = Size.TINY;
 				break;
 			default:
 				return;
 		}
-		for (int i = 0; i < size.quantity; i++) {
+
+		for(int i = 0; i < size.quantity; i++){
 			movingObjects.add(new Meteor(
 					meteor.getPosition(),
-					new Vector2D(0,1).setDirection(Math.random()*Math.PI*2),
-					Constants.METEOR_VEL*Math.random()+1,
+					new Vector2D(0, 1).setDirection(Math.random()*Math.PI*2),
+					Constants.METEOR_VEL*Math.random() + 1,
 					textures[(int)(Math.random()*textures.length)],
 					this,
 					newSize
@@ -67,87 +75,49 @@ public class GameState {
 		}
 	}
 
+
 	private void startWave(){
+
+		messages.add(new Message(new Vector2D(Constants.WIDTH/2, Constants.HEIGHT/2), false,
+				"WAVE "+waves, Color.WHITE, true, Assets.fontBig, this));
 
 		double x, y;
 
-		for (int i = 0; i < meteors; i++ ) {
-			x=i %2==0 ? Math.random()* Constants.WIDTH : 0;
-			y=i %2==0 ? Math.random()* Constants.HEIGHT : 0;
+		for(int i = 0; i < meteors; i++){
 
-			BufferedImage texture= Assets.bigs[(int)(Math.random()*Assets.bigs.length)];
+			x = i % 2 == 0 ? Math.random()*Constants.WIDTH : 0;
+			y = i % 2 == 0 ? 0 : Math.random()*Constants.HEIGHT;
+
+			BufferedImage texture = Assets.bigs[(int)(Math.random()*Assets.bigs.length)];
 
 			movingObjects.add(new Meteor(
-					new Vector2D(x,y),
-					new Vector2D(0,1).setDirection(Math.random()*Math.PI*2),
-					Constants.METEOR_VEL*Math.random()+1,
+					new Vector2D(x, y),
+					new Vector2D(0, 1).setDirection(Math.random()*Math.PI*2),
+					Constants.METEOR_VEL*Math.random() + 1,
 					texture,
 					this,
 					Size.BIG
 			));
+
 		}
-		meteors++;
-		spawUfo();
+		meteors ++;
+		spawnUfo();
 	}
 
 	public void playExplosion(Vector2D position){
 		explosions.add(new Animation(
 				Assets.exp,
 				50,
-				position.subtract(new Vector2D((double) Assets.exp[0].getWidth() /2, (double) Assets.exp[0].getHeight() /2))
+				position.subtract(new Vector2D(Assets.exp[0].getWidth()/2, Assets.exp[0].getHeight()/2))
 		));
 	}
 
-	public void update() {
-		for(int i = 0; i < this.movingObjects.size(); ++i) {
-			((MovingObject)this.movingObjects.get(i)).update();
-		}
+	private void spawnUfo(){
 
-		for(int i = 0; i < this.explosions.size(); ++i) {
-			Animation anim= explosions.get(i);
-			anim.update();
+		int rand = (int) (Math.random()*2);
 
-			if (!anim.isRunning()) {
-				explosions.remove(i);
-			}
-		}
-
-		for(int i = 0; i < this.movingObjects.size(); ++i){
-			if (movingObjects.get(i) instanceof Meteor)
-				return;
-		}
-		spawUfo();
-	}
-
-	public void draw(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-
-		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
-		for(int i = 0; i < this.movingObjects.size(); ++i) {
-			((MovingObject)this.movingObjects.get(i)).draw(g);
-		}
-
-		for(int i = 0; i < this.explosions.size(); ++i) {
-			Animation anim = explosions.get(i);
-			g2d.drawImage(
-					anim.getCurrentFrame(),
-					(int) anim.getPosition().getX(),
-					(int) anim.getPosition().getY(),
-					null
-			);
-		}
-
-		drawScore(g);
-		drawLives(g);
-
-	}
-
-	private void spawUfo(){
-		int rand = (int)(Math.random()*2);
-
-		double x = rand == 0 ? (Math.random()*Constants.WIDTH) : 0;
-		double y = rand == 0 ? 0 : (Math.random()*Constants.HEIGHT);
+		double x = rand == 0 ? (Math.random()*Constants.WIDTH): Constants.WIDTH;
+		double y = rand == 0 ? Constants.HEIGHT : (Math.random()*Constants.HEIGHT);
 
 		ArrayList<Vector2D> path = new ArrayList<Vector2D>();
 
@@ -157,26 +127,72 @@ public class GameState {
 		posY = Math.random()*Constants.HEIGHT/2;
 		path.add(new Vector2D(posX, posY));
 
-		posX = Math.random()*Constants.WIDTH/2 + Constants.WIDTH/2;
+		posX = Math.random()*(Constants.WIDTH/2) + Constants.WIDTH/2;
 		posY = Math.random()*Constants.HEIGHT/2;
 		path.add(new Vector2D(posX, posY));
 
 		posX = Math.random()*Constants.WIDTH/2;
-		posY = Math.random()*Constants.HEIGHT/2 + Constants.HEIGHT/2;
+		posY = Math.random()*(Constants.HEIGHT/2) + Constants.HEIGHT/2;
 		path.add(new Vector2D(posX, posY));
 
-		posX = Math.random()*Constants.WIDTH/2 + Constants.WIDTH/2;
-		posY = Math.random()*Constants.HEIGHT/2 + Constants.HEIGHT/2;
+		posX = Math.random()*(Constants.WIDTH/2) + Constants.WIDTH/2;
+		posY = Math.random()*(Constants.HEIGHT/2) + Constants.HEIGHT/2;
 		path.add(new Vector2D(posX, posY));
 
 		movingObjects.add(new Ufo(
-				new Vector2D(x,y),
+				new Vector2D(x, y),
 				new Vector2D(),
 				Constants.UFO_MAX_VEL,
 				Assets.ufo,
 				path,
 				this
 		));
+
+	}
+
+
+	public void update()
+	{
+		for(int i = 0; i < movingObjects.size(); i++)
+			movingObjects.get(i).update();
+
+		for(int i = 0; i < explosions.size(); i++){
+			Animation anim = explosions.get(i);
+			anim.update();
+			if(!anim.isRunning()){
+				explosions.remove(i);
+			}
+
+		}
+
+		for(int i = 0; i < movingObjects.size(); i++)
+			if(movingObjects.get(i) instanceof Meteor)
+				return;
+
+		startWave();
+
+	}
+
+	public void draw(Graphics g)
+	{
+		Graphics2D g2d = (Graphics2D)g;
+
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+		for(int i = 0; i < messages.size(); i++)
+			messages.get(i).draw(g2d);
+
+		for(int i = 0; i < movingObjects.size(); i++)
+			movingObjects.get(i).draw(g);
+
+		for(int i = 0; i < explosions.size(); i++){
+			Animation anim = explosions.get(i);
+			g2d.drawImage(anim.getCurrentFrame(), (int)anim.getPosition().getX(), (int)anim.getPosition().getY(),
+					null);
+
+		}
+		drawScore(g);
+		drawLives(g);
 	}
 
 	private void drawScore(Graphics g) {
@@ -221,13 +237,17 @@ public class GameState {
 
 	}
 
-	public void subtractLife() {lives --;}
+	public ArrayList<MovingObject> getMovingObjects() {
+		return movingObjects;
+	}
+
+	public ArrayList<Message> getMessages() {
+		return messages;
+	}
 
 	public Player getPlayer() {
 		return player;
 	}
 
-	public ArrayList<MovingObject> getMovingObjects() {
-		return this.movingObjects;
-	}
+	public void subtractLife() {lives --;}
 }

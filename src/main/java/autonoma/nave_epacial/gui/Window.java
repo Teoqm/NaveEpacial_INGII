@@ -3,7 +3,9 @@ package autonoma.nave_epacial.gui;
 import autonoma.nave_epacial.gameObjects.Constants;
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.input.KeyBoard;
+import autonoma.nave_epacial.input.MouseInput;
 import autonoma.nave_epacial.states.GameState;
+import autonoma.nave_epacial.states.MenuState;
 import autonoma.nave_epacial.states.State;
 
 import javax.swing.*;
@@ -30,6 +32,8 @@ public class Window extends JFrame implements Runnable{
 
     private KeyBoard keyBoard;
 
+    private MouseInput mouseInput;
+
     public Window()
     {
         setTitle("Space Ship Game");
@@ -40,6 +44,7 @@ public class Window extends JFrame implements Runnable{
 
         canvas = new Canvas();
         keyBoard = new KeyBoard();
+        mouseInput = new MouseInput();
 
         canvas.setPreferredSize(new Dimension(Constants.WIDTH, Constants.HEIGHT));
         canvas.setMaximumSize(new Dimension(Constants.WIDTH, Constants.HEIGHT));
@@ -48,6 +53,8 @@ public class Window extends JFrame implements Runnable{
 
         add(canvas);
         canvas.addKeyListener(keyBoard);
+        canvas.addMouseListener(mouseInput);
+        canvas.addMouseMotionListener(mouseInput);
         setVisible(true);
     }
 
@@ -91,7 +98,7 @@ public class Window extends JFrame implements Runnable{
     {
         Assets.init();
 
-        State.changeState(new GameState());
+        State.changeState(new MenuState());
     }
 
 

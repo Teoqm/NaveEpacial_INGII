@@ -41,6 +41,12 @@ public class Assets {
 	public static BufferedImage[] numbers = new BufferedImage[11];
 	public static BufferedImage life;
 
+	// ui
+
+	public static BufferedImage blueBtn;
+	public static BufferedImage greyBtn;
+
+
 	public static void init()
 	{
 		player = Loader.ImageLoader("/ships/player_1.png");
@@ -85,6 +91,9 @@ public class Assets {
 		playerLoose = Loader.loadSound("/sounds/playerLoose.wav");
 		playerShoot = Loader.loadSound("/sounds/playerShoot.wav");
 		ufoShoot = Loader.loadSound("/sounds/ufoShoot.wav");
+
+		greyBtn = Loader.ImageLoader("/ui/grey_button.png");
+		blueBtn = Loader.ImageLoader("/ui/blue_button.png");
 
 	}
 

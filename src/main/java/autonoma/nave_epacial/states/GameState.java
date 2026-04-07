@@ -15,6 +15,7 @@ public class GameState extends State {
 	private Player player;
 	public static final Vector2D PLAYER_START_POSITION = new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
 			Constants.HEIGHT/2 - Assets.player.getHeight()/2);
+
 	private ArrayList<MovingObject> movingObjects = new ArrayList<MovingObject>();
 	private ArrayList<Animation> explosions = new ArrayList<Animation>();
 	private ArrayList<Message> messages = new ArrayList<Message>();
@@ -23,10 +24,13 @@ public class GameState extends State {
 	private int lives = 3;
 
 	private int meteors;
-
 	private int waves = 1;
 
 	private Sound backgroundSound;
+	private Chronometer gameOverTimer;
+	private boolean gameOver;
+
+	private Chronometer ufoSpawner;
 
 	public GameState()
 	{
@@ -44,7 +48,7 @@ public class GameState extends State {
 
 	public void addScore(int value, Vector2D position) {
 		score += value;
-		messages.add(new Message(position, true, "+"+value+" score", Color.WHITE, false, Assets.fontMed, this));
+		messages.add(new Message(position, true, "+"+value+" score", Color.WHITE, false, Assets.fontMed));
 	}
 
 	public void divideMeteor(Meteor meteor){
@@ -85,7 +89,7 @@ public class GameState extends State {
 	private void startWave(){
 
 		messages.add(new Message(new Vector2D(Constants.WIDTH/2, Constants.HEIGHT/2), false,
-				"WAVE "+waves, Color.WHITE, true, Assets.fontBig, this));
+				"WAVE "+waves, Color.WHITE, true, Assets.fontBig));
 
 		double x, y;
 
@@ -159,8 +163,18 @@ public class GameState extends State {
 
 	public void update()
 	{
-		for(int i = 0; i < movingObjects.size(); i++)
-			movingObjects.get(i).update();
+
+		for(int i = 0; i < movingObjects.size(); i++) {
+
+			MovingObject mo = movingObjects.get(i);
+
+			mo.update();
+			if(mo.isDead()) {
+				movingObjects.remove(i);
+				i--;
+			}
+
+		}
 
 		for(int i = 0; i < explosions.size(); i++){
 			Animation anim = explosions.get(i);
@@ -170,6 +184,19 @@ public class GameState extends State {
 			}
 
 		}
+
+		if(gameOver && !gameOverTimer.isRunning()) {
+			State.changeState(new MenuState());
+		}
+
+
+		if(!ufoSpawner.isRunning()) {
+			ufoSpawner.run(Constants.UFO_SPAWN_RATE);
+			spawnUfo();
+		}
+
+		gameOverTimer.update();
+		ufoSpawner.update();
 
 		for(int i = 0; i < movingObjects.size(); i++)
 			if(movingObjects.get(i) instanceof Meteor)
@@ -219,6 +246,9 @@ public class GameState extends State {
 
 	private void drawLives(Graphics g){
 
+		if (lives < 1) {
+			return;
+		}
 		Vector2D livePosition = new Vector2D(25, 25);
 
 		g.drawImage(Assets.life, (int)livePosition.getX(), (int)livePosition.getY(), null);
@@ -255,5 +285,23 @@ public class GameState extends State {
 		return player;
 	}
 
-	public void subtractLife() {lives --;}
+	public boolean subtractLife() {
+		lives --;
+		return lives > 0;
+	}
+
+	public void gameOver() {
+		Message gameOverMsg = new Message(
+				PLAYER_START_POSITION,
+				true,
+				"GAME OVER",
+				Color.WHITE,
+				true,
+				Assets.fontBig);
+
+		this.messages.add(gameOverMsg);
+		gameOverTimer.run(Constants.GAME_OVER_TIME);
+		gameOver = true;
+	}
+
 }

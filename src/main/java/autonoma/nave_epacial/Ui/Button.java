@@ -1,5 +1,10 @@
 package autonoma.nave_epacial.Ui;
 
+import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Text;
+import autonoma.nave_epacial.input.MouseInput;
+import autonoma.nave_epacial.math.Vector2D;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 

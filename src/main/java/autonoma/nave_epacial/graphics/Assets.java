@@ -1,5 +1,6 @@
 package autonoma.nave_epacial.graphics;
 
+import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -26,6 +27,8 @@ public class Assets {
 
 	public static Font fontBig;
 	public static Font fontMed;
+
+	public static Clip backgroundMusic, explosion, playerLoose, playerShoot, ufoShoot;
 
 
 	//meteors
@@ -76,6 +79,13 @@ public class Assets {
 		}
 
 		life = Loader.ImageLoader("/others/life.png");
+
+		backgroundMusic = Loader.loadSound("/sounds/backgroundMusic.wav");
+		explosion = Loader.loadSound("/sounds/explosion.wav");
+		playerLoose = Loader.loadSound("/sounds/playerLoose.wav");
+		playerShoot = Loader.loadSound("/sounds/playerShoot.wav");
+		ufoShoot = Loader.loadSound("/sounds/ufoShoot.wav");
+
 	}
 
 }

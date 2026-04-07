@@ -212,8 +212,11 @@ public class GameState extends State {
 
 		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-		for(int i = 0; i < messages.size(); i++)
+		for(int i = 0; i < messages.size(); i++) {
 			messages.get(i).draw(g2d);
+			if(messages.get(i).isDead())
+				messages.remove(i);
+		}
 
 		for(int i = 0; i < movingObjects.size(); i++)
 			movingObjects.get(i).draw(g);

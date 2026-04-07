@@ -4,6 +4,7 @@ import autonoma.nave_epacial.gameObjects.Constants;
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.states.GameState;
+import autonoma.nave_epacial.states.State;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +27,7 @@ public class Window extends JFrame implements Runnable{
     private double delta = 0;
     private int AVERAGEFPS = FPS;
 
-    private GameState gameState;
+
     private KeyBoard keyBoard;
 
     public Window()
@@ -55,7 +56,8 @@ public class Window extends JFrame implements Runnable{
 
     private void update(){
         keyBoard.update();
-        gameState.update();
+
+        State.getCurrentState().update();
     }
 
     private void draw(){
@@ -75,7 +77,7 @@ public class Window extends JFrame implements Runnable{
 
         g.fillRect(0, 0, Constants.WIDTH, Constants.HEIGHT);
 
-        gameState.draw(g);
+        State.getCurrentState().draw(g);
 
         g.setColor(Color.WHITE);
         g.drawString(""+AVERAGEFPS, 10, 20);
@@ -88,7 +90,8 @@ public class Window extends JFrame implements Runnable{
     private void init()
     {
         Assets.init();
-        gameState = new GameState();
+
+        State.changeState(new GameState());
     }
 
 

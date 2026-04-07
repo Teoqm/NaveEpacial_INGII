@@ -11,7 +11,7 @@ import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.graphics.Text;
 import autonoma.nave_epacial.math.Vector2D;
 
-public class GameState {
+public class GameState extends State {
 	private Player player;
 	public static final Vector2D PLAYER_START_POSITION = new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
 			Constants.HEIGHT/2 - Assets.player.getHeight()/2);

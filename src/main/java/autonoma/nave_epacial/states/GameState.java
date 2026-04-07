@@ -11,11 +11,11 @@ import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.graphics.Text;
 import autonoma.nave_epacial.math.Vector2D;
 
-public class GameState extends State {
-	private Player player;
+public class GameState extends State{
 	public static final Vector2D PLAYER_START_POSITION = new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
 			Constants.HEIGHT/2 - Assets.player.getHeight()/2);
 
+	private Player player;
 	private ArrayList<MovingObject> movingObjects = new ArrayList<MovingObject>();
 	private ArrayList<Animation> explosions = new ArrayList<Animation>();
 	private ArrayList<Message> messages = new ArrayList<Message>();
@@ -26,7 +26,7 @@ public class GameState extends State {
 	private int meteors;
 	private int waves = 1;
 
-	private Sound backgroundSound;
+	private Sound backgroundMusic;
 	private Chronometer gameOverTimer;
 	private boolean gameOver;
 
@@ -37,14 +37,20 @@ public class GameState extends State {
 		player = new Player(PLAYER_START_POSITION, new Vector2D(),
 				Constants.PLAYER_MAX_VEL, Assets.player, this);
 
+		gameOverTimer = new Chronometer();
+		gameOver = false;
 		movingObjects.add(player);
 
 		meteors = 1;
 		startWave();
-		backgroundSound = new Sound(Assets.backgroundMusic);
-		backgroundSound.loop();
-		backgroundSound.changeVolume(-10);
+		backgroundMusic = new Sound(Assets.backgroundMusic);
+		//backgroundMusic.loop();
+		backgroundMusic.changeVolume(-10.0f);
+
+		ufoSpawner = new Chronometer();
+		ufoSpawner.run(Constants.UFO_SPAWN_RATE);
 	}
+
 
 	public void addScore(int value, Vector2D position) {
 		score += value;
@@ -111,7 +117,6 @@ public class GameState extends State {
 
 		}
 		meteors ++;
-		spawnUfo();
 	}
 
 	public void playExplosion(Vector2D position){
@@ -249,9 +254,9 @@ public class GameState extends State {
 
 	private void drawLives(Graphics g){
 
-		if (lives < 1) {
+		if(lives < 1)
 			return;
-		}
+
 		Vector2D livePosition = new Vector2D(25, 25);
 
 		g.drawImage(Assets.life, (int)livePosition.getX(), (int)livePosition.getY(), null);

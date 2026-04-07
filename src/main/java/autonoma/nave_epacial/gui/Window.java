@@ -5,6 +5,7 @@ import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.input.KeyBoard;
 import autonoma.nave_epacial.input.MouseInput;
 import autonoma.nave_epacial.states.GameState;
+import autonoma.nave_epacial.states.LoadingState;
 import autonoma.nave_epacial.states.MenuState;
 import autonoma.nave_epacial.states.State;
 
@@ -96,9 +97,17 @@ public class Window extends JFrame implements Runnable{
 
     private void init()
     {
+        Thread loadingThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                Assets.init();
+            }
+        });
+
         Assets.init();
 
-        State.changeState(new MenuState());
+        State.changeState(new LoadingState(loadingThread));
     }
 
 

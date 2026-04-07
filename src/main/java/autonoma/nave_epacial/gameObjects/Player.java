@@ -20,6 +20,11 @@ public class Player extends MovingObject {
     private boolean accelerating = false;
     private Chronometer fireRate;
 
+    private boolean spawning,visible;
+
+    private Chronometer spawnTime, flickerTime;
+
+
 
     public Player(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
         super(position, velocity, maxVel, texture,  gameState);
@@ -30,7 +35,24 @@ public class Player extends MovingObject {
 
     public void update() {
 
-        if (KeyBoard.SHOOT && !fireRate.isRunning()) {
+
+        if(!spawnTime.isRunning()){
+            spawning = false;
+            visible = true;
+        }
+
+        if(spawning){
+
+            if(! flickerTime.isRunning()){
+
+                flickerTime.run(Constants.FLICKER_TIME);
+                visible = !visible;
+            }
+
+        }
+
+
+        if (KeyBoard.SHOOT && !fireRate.isRunning() && !spawning) {
             this.gameState.getMovingObjects().add(0, new Laser(this.getCenter().add(this.heading.scale((double)this.width)), this.heading, Constants.LASER_VEL, this.angle, Assets.blueLaser, gameState));
             fireRate.run(Constants.FIRERATE);
         }
@@ -76,24 +98,53 @@ public class Player extends MovingObject {
         }
 
         fireRate.update();
+        spawnTime.update();
+        flickerTime.update();
         collidesWith();
     }
 
+    @Override
+    public void destroy() {
+        spawning = true;
+        spawnTime.run(Constants.SPAWNING_TIME);
+        resetValues();
+        gameState.subtractLife();
+    }
+
+    @Override
     public void draw(Graphics g) {
+
+        if(!visible)
+            return;
+
         Graphics2D g2d = (Graphics2D)g;
-        AffineTransform at1 = AffineTransform.getTranslateInstance(this.position.getX() + (double)(this.width / 2) + 15, this.position.getY() + (this.height / 2) + 15);
-        AffineTransform at2 = AffineTransform.getTranslateInstance(this.position.getX() + 5, this.position.getY() + (this.height / 2) + 15);
-        at1.rotate(this.angle, -15, -15);
-        at2.rotate(this.angle, (this.width / 2 - 5), -15);
-        if (this.accelerating) {
-            g2d.drawImage(Assets.speed, at1, (ImageObserver)null);
-            g2d.drawImage(Assets.speed, at2, (ImageObserver)null);
+
+        AffineTransform at1 = AffineTransform.getTranslateInstance(position.getX() + width/2 + 5,
+                position.getY() + height/2 + 10);
+
+        AffineTransform at2 = AffineTransform.getTranslateInstance(position.getX() + 5, position.getY() + height/2 + 10);
+
+        at1.rotate(angle, -5, -10);
+        at2.rotate(angle, width/2 -5, -10);
+
+        if(accelerating)
+        {
+            g2d.drawImage(Assets.speed, at1, null);
+            g2d.drawImage(Assets.speed, at2, null);
         }
 
-        this.at = AffineTransform.getTranslateInstance(this.position.getX(), this.position.getY());
-        this.at.rotate(this.angle, (double)(this.width / 2), (double)(this.height / 2));
-        g2d.drawImage(texture, this.at, (ImageObserver)null);
+
+
+        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+
+        at.rotate(angle, width/2, height/2);
+
+        g2d.drawImage(texture, at, null);
+
     }
+
+    public boolean isSpawning() {return spawning;}
+
 
 }
 

@@ -19,11 +19,15 @@ public class GameState {
 
 	private int meteors;
 
-	public GameState() {
-		this.player = new Player(new Vector2D((double)400, (double)300), new Vector2D(), Constants.PLAYER_MAX_VEL, Assets.player, this);
-		this.movingObjects.add(this.player);
+	public GameState()
+	{
+		player = new Player(new Vector2D(Constants.WIDTH/2 - Assets.player.getWidth()/2,
+				Constants.HEIGHT/2 - Assets.player.getHeight()/2), new Vector2D(),
+				Constants.PLAYER_MAX_VEL, Assets.player, this);
 
-		meteors = 2;
+		movingObjects.add(player);
+
+		meteors = 1;
 		startWave();
 	}
 
@@ -216,6 +220,8 @@ public class GameState {
 		}
 
 	}
+
+	public void subtractLife() {lives --;}
 
 	public Player getPlayer() {
 		return player;

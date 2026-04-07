@@ -1,6 +1,7 @@
 package autonoma.nave_epacial.gameObjects;
 
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.math.Vector2D;
 import autonoma.nave_epacial.states.GameState;
 
@@ -21,6 +22,8 @@ public class Ufo extends MovingObject {
 
     private  Chronometer fireRate;
 
+    private Sound shoot;
+
     public Ufo(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture,
                ArrayList<Vector2D> path,GameState gameState) {
         super(position, velocity, maxVel, texture, gameState);
@@ -29,6 +32,7 @@ public class Ufo extends MovingObject {
         following = true;
         fireRate = new Chronometer();
         fireRate.run(Constants.UFO_FIRE_RATE);
+        shoot = new Sound(Assets.ufoShoot);
     }
 
     private Vector2D pathFollowing() {
@@ -99,6 +103,12 @@ public class Ufo extends MovingObject {
             );
             gameState.getMovingObjects().add(0, laser);
             fireRate.run(Constants.UFO_FIRE_RATE);
+
+            shoot.play();
+        }
+
+        if(shoot.getFramePosition() > 8500){
+            shoot.stop();
         }
 
         angle+= 0.05;
@@ -109,7 +119,7 @@ public class Ufo extends MovingObject {
 
     @Override
     public void destroy(){
-        gameState.addScore(Constants.UFO_SCORE);
+        gameState.addScore(Constants.UFO_SCORE, position);
         super.destroy();
      }
     @Override

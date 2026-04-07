@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import autonoma.nave_epacial.gameObjects.*;
 import autonoma.nave_epacial.graphics.Animation;
 import autonoma.nave_epacial.graphics.Assets;
+import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.graphics.Text;
 import autonoma.nave_epacial.math.Vector2D;
 
@@ -25,6 +26,8 @@ public class GameState {
 
 	private int waves = 1;
 
+	private Sound backgroundSound;
+
 	public GameState()
 	{
 		player = new Player(PLAYER_START_POSITION, new Vector2D(),
@@ -34,6 +37,9 @@ public class GameState {
 
 		meteors = 1;
 		startWave();
+		backgroundSound = new Sound(Assets.backgroundMusic);
+		backgroundSound.loop();
+		backgroundSound.changeVolume(-10);
 	}
 
 	public void addScore(int value, Vector2D position) {

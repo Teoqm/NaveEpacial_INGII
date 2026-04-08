@@ -35,40 +35,45 @@ public abstract class MovingObject extends GameObject {
         Dead = false;
     }
 
-    protected void collidesWith(){
-
+    protected void collidesWith() {
         ArrayList<MovingObject> movingObjects = gameState.getMovingObjects();
+        for (int i = 0; i < movingObjects.size(); i++) {
+            MovingObject m = movingObjects.get(i);
+            if (m.equals(this)) continue;
 
-        for(int i = 0; i < movingObjects.size(); i++){
+            // Si m es un jugador, solo colisionar si está en ESTA pantalla
+            if (m instanceof Player) {
+                Player p = (Player) m;
+                // Jugador remoto: solo si está en esta pantalla
+                if (p.isRemote() && !p.isOnMyScreen()) continue;
+                // Jugador local: solo si está en esta pantalla
+                if (!p.isRemote() && !p.isOnMyScreen()) continue;
+            }
 
-            MovingObject m  = movingObjects.get(i);
-
-            if(m.equals(this))
-                continue;
+            // Si YO soy un jugador local, solo colisionar si estoy en esta pantalla
+            if (this instanceof Player) {
+                Player me = (Player) this;
+                if (!me.isRemote() && !me.isOnMyScreen()) continue;
+            }
 
             double distance = m.getCenter().subtract(getCenter()).getMagnitude();
-
-            if(distance < m.width/2 + width/2 && movingObjects.contains(this) && !m.Dead && !Dead){
+            if (distance < m.width / 2 + width / 2
+                    && movingObjects.contains(this) && !m.Dead && !Dead) {
                 objectCollision(m, this);
             }
         }
     }
 
-    private void objectCollision(MovingObject a, MovingObject b){
+    private void objectCollision(MovingObject a, MovingObject b) {
+        // Dos jugadores no se destruyen entre sí
+        if (a instanceof Player && b instanceof Player) return;
+        if (a instanceof Player && ((Player) a).isSpawning()) return;
+        if (b instanceof Player && ((Player) b).isSpawning()) return;
+        if (a instanceof Meteor && b instanceof Meteor) return;
 
-        if(a instanceof Player && ((Player)a).isSpawning()) {
-            return;
-        }
-        if(b instanceof Player && ((Player)b).isSpawning()) {
-            return;
-        }
-
-
-        if(!(a instanceof Meteor && b instanceof Meteor)){
-            gameState.playExplosion(getCenter());
-            a.destroy();
-            b.destroy();
-        }
+        gameState.playExplosion(getCenter());
+        a.destroy();
+        b.destroy();
     }
 
 
@@ -83,4 +88,7 @@ public abstract class MovingObject extends GameObject {
     }
 
     public boolean isDead() {return Dead;}
+
+    public double getAngle()          { return angle; }
+    public void   setAngle(double a)  { this.angle = a; }
 }

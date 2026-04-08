@@ -5,6 +5,11 @@ import java.nio.file.FileSystem;
 import org.json.JSONObject;
 public class Constants {
 
+    // Red UDP
+    public static final int    LOCAL_PORT  = 9001; // PC 1: 9001 | PC 2: 9002
+    public static final int    REMOTE_PORT = 9002; // PC 1: 9002 | PC 2: 9001
+    public static final String REMOTE_IP   = "192.168.1.x"; // IP de la otra PC
+
     // frame dimensions
 
     public static final int WIDTH = 1000;

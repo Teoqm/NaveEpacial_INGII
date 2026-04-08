@@ -2,47 +2,70 @@ package autonoma.nave_epacial.gameObjects;
 
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.math.Vector2D;
+import autonoma.nave_epacial.network.GameMessage;
+import autonoma.nave_epacial.network.MessageType;
+import autonoma.nave_epacial.network.UdpClient;
 import autonoma.nave_epacial.states.GameState;
 
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 
 public class Meteor extends MovingObject {
 
-    private Size size;
+    private final Size      size;
+    private UdpClient udpClient;
 
-    public Meteor(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState, Size size) {
+    public Meteor(Vector2D position, Vector2D velocity, double maxVel,
+                  BufferedImage texture, GameState gameState, Size size) {
         super(position, velocity, maxVel, texture, gameState);
-        this.size = size;
-        this.velocity=velocity.scale(maxVel);
+        this.size     = size;
+        this.velocity = velocity.scale(maxVel);
     }
+
+    public void setUdpClient(UdpClient client) { this.udpClient = client; }
 
     @Override
     public void update() {
-        position=position.add(velocity);
+        position = position.add(velocity);
 
-        if (this.position.getX() > Constants.WIDTH) {
-            this.position.setX((double)-width);
+        if (position.getX() > Constants.WIDTH) {
+            sendCross("RIGHT");
+            destroyQuiet();
+            return;
+        }
+        if (position.getX() < -width) {
+            sendCross("LEFT");
+            destroyQuiet();
+            return;
         }
 
-        if (this.position.getY() > Constants.HEIGHT) {
-            this.position.setY((double)-height);
-        }
+        if (position.getY() > Constants.HEIGHT) position.setY(-height);
+        if (position.getY() < -height)          position.setY(Constants.HEIGHT);
 
-        if (this.position.getX() < (double)-width) {
-            this.position.setX(Constants.WIDTH);
-        }
+        angle += Constants.DELTAANGLE / 2;
 
-        if (this.position.getY() < (double)-height) {
-            this.position.setY(Constants.HEIGHT);
-        }
-
-        angle += Constants.DELTAANGLE/2;
+        // FIX: verificar colisiones con jugadores y lasers
+        collidesWith();
     }
 
+    private void sendCross(String side) {
+        if (udpClient == null) return;
+        udpClient.send(new GameMessage(MessageType.METEOR_CROSS,
+                side,
+                String.valueOf(position.getY()),
+                String.valueOf(velocity.getX()),
+                String.valueOf(velocity.getY()),
+                String.valueOf(maxVel),
+                size.name()));
+    }
+
+    /** Destrucción silenciosa: solo lo elimina de la lista, sin dividir ni puntuar. */
+    private void destroyQuiet() {
+        super.destroy();
+    }
+
+    /** Destrucción real: divide y da puntos. Solo ocurre al ser golpeado. */
     @Override
     public void destroy() {
         gameState.divideMeteor(this);
@@ -52,14 +75,11 @@ public class Meteor extends MovingObject {
 
     @Override
     public void draw(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g;
-
-        this.at = AffineTransform.getTranslateInstance(this.position.getX(), this.position.getY());
-        this.at.rotate(this.angle, (double)(this.width / 2), (double)(this.height / 2));
-        g2d.drawImage(texture, this.at, (ImageObserver)null);
+        Graphics2D g2d = (Graphics2D) g;
+        at = AffineTransform.getTranslateInstance(position.getX(), position.getY());
+        at.rotate(angle, width / 2, height / 2);
+        g2d.drawImage(texture, at, null);
     }
 
-    public Size getSize() {
-        return this.size;
-    }
+    public Size getSize() { return size; }
 }

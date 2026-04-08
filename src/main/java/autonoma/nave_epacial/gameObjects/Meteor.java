@@ -11,11 +11,30 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
+/**
+ * La clase Meteor representa los obstáculos principales del juego.
+ * Estos objetos se desplazan por la pantalla con un movimiento constante y rotación,
+ * poseen la capacidad de dividirse en fragmentos más pequeños al ser destruidos
+ * y pueden transferirse entre diferentes instancias de juego mediante red UDP.
+ * * @author Gemini
+ * @version 1.0
+ */
 public class Meteor extends MovingObject {
 
+    /** El tamaño actual del meteoro (Grande, Mediano o Pequeño). */
     private final Size      size;
+    /** Cliente UDP utilizado para sincronizar el cruce del meteoro entre pantallas. */
     private UdpClient udpClient;
 
+    /**
+     * Construye un nuevo Meteor con dimensiones, velocidad y tamaño específicos.
+     * * @param position  Coordenadas iniciales en el espacio de juego.
+     * @param velocity  Vector de dirección del movimiento.
+     * @param maxVel    Velocidad máxima permitida para este meteoro.
+     * @param texture   Imagen visual del meteoro.
+     * @param gameState Referencia al estado del juego para gestionar colisiones y puntajes.
+     * @param size      Categoría de tamaño del meteoro.
+     */
     public Meteor(Vector2D position, Vector2D velocity, double maxVel,
                   BufferedImage texture, GameState gameState, Size size) {
         super(position, velocity, maxVel, texture, gameState);
@@ -23,8 +42,17 @@ public class Meteor extends MovingObject {
         this.velocity = velocity.scale(maxVel);
     }
 
+    /**
+     * Establece el cliente UDP para la comunicación entre pares.
+     * * @param client Instancia de {@link UdpClient}.
+     */
     public void setUdpClient(UdpClient client) { this.udpClient = client; }
 
+    /**
+     * Actualiza la posición y rotación del meteoro.
+     * Gestiona el cruce de límites horizontales para transferencia de red y
+     * el efecto de "envoltura" (wrap-around) en los límites verticales.
+     */
     @Override
     public void update() {
         position = position.add(velocity);
@@ -49,6 +77,11 @@ public class Meteor extends MovingObject {
         collidesWith();
     }
 
+    /**
+     * Notifica a través de la red que el meteoro ha salido de la pantalla
+     * local para aparecer en la del equipo remoto.
+     * * @param side Lado por el cual salió el objeto ("LEFT" o "RIGHT").
+     */
     private void sendCross(String side) {
         if (udpClient == null) return;
         udpClient.send(new GameMessage(MessageType.METEOR_CROSS,
@@ -60,12 +93,17 @@ public class Meteor extends MovingObject {
                 size.name()));
     }
 
-    /** Destrucción silenciosa: solo lo elimina de la lista, sin dividir ni puntuar. */
+    /** * Realiza una eliminación del objeto sin activar eventos de juego.
+     * Se utiliza cuando el meteoro simplemente sale del área local hacia la red.
+     */
     private void destroyQuiet() {
         super.destroy();
     }
 
-    /** Destrucción real: divide y da puntos. Solo ocurre al ser golpeado. */
+    /** * Realiza la destrucción completa del meteoro.
+     * Este método se activa al recibir un impacto, otorgando puntaje al jugador
+     * y activando la lógica de división en meteoros más pequeños.
+     */
     @Override
     public void destroy() {
         gameState.divideMeteor(this);
@@ -73,6 +111,10 @@ public class Meteor extends MovingObject {
         super.destroy();
     }
 
+    /**
+     * Renderiza el meteoro aplicando una rotación continua sobre su centro.
+     * * @param g Contexto gráfico para el dibujo.
+     */
     @Override
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
@@ -81,5 +123,9 @@ public class Meteor extends MovingObject {
         g2d.drawImage(texture, at, null);
     }
 
+    /**
+     * Obtiene el tamaño actual del meteoro.
+     * * @return El valor del enumerador {@link Size}.
+     */
     public Size getSize() { return size; }
 }

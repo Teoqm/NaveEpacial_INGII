@@ -1,5 +1,7 @@
 package autonoma.nave_epacial.network;
 public enum MessageType {
+    WINNER,
+    ENEMY_DIED,
     // Jugador 1
     PLAYER_STATE,
     PLAYER_CROSS,

@@ -8,6 +8,7 @@ import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.math.Vector2D;
 import autonoma.nave_epacial.network.GameMessage;
+import autonoma.nave_epacial.network.MessageType;
 import autonoma.nave_epacial.network.NetworkObserver;
 import autonoma.nave_epacial.network.UdpClient;
 
@@ -43,6 +44,8 @@ public class GameState extends State implements NetworkObserver {
 	private int score = 0;
 	private int lives1 = 3;
 	private int lives2 = 3;
+	private int livesEnemy1 = 3; // vidas del jugador remoto 1
+	private int livesEnemy2 = 3; // vidas del jugador remoto 2
 	private int meteors;
 	private int waves = 1;
 
@@ -117,6 +120,31 @@ public class GameState extends State implements NetworkObserver {
 	@Override
 	public void onMessageReceived(GameMessage msg) {
 		switch (msg.type) {
+
+			case ENEMY_DIED: {
+				// Un jugador del otro PC perdió una vida
+				String which = msg.data[0];
+				if (which.equals("1")) {
+					livesEnemy1--;
+				} else {
+					livesEnemy2--;
+				}
+
+				boolean remoteAlive = livesEnemy1 > 0 || livesEnemy2 > 0;
+				boolean localAlive  = lives1 > 0 || lives2 > 0;
+
+				if (!remoteAlive && localAlive) {
+					// El otro equipo murió: mi equipo gana
+					State.changeState(new WinnerState("Tu equipo gana"));
+				}
+				break;
+			}
+
+			case WINNER: {
+				// El otro PC nos dice que ellos perdieron: nosotros ganamos
+				State.changeState(new WinnerState("Tu equipo gana"));
+				break;
+			}
 
 			// ── Jugador remoto 1 ──────────────────────────────────
 			case PLAYER_STATE: {
@@ -391,34 +419,17 @@ public class GameState extends State implements NetworkObserver {
 	}
 
 	private void drawLives(Graphics g) {
-		Vector2D lp = new Vector2D(25, 25);
-		g.drawImage(Assets.life, (int) lp.getX(), (int) lp.getY(), null);
-		g.drawImage(Assets.numbers[10], (int) lp.getX() + 40, (int) lp.getY() + 5, null);
+		g.setFont(Assets.fontMed);
 
-		// Vidas jugador 1
-		if (lives1 > 0) {
-			String s1 = Integer.toString(lives1);
-			Vector2D pos = new Vector2D(lp.getX(), lp.getY());
-			for (int i = 0; i < s1.length(); i++) {
-				int n = Integer.parseInt(s1.substring(i, i + 1));
-				g.drawImage(Assets.numbers[n], (int) pos.getX() + 60, (int) pos.getY() + 5, null);
-				pos.setX(pos.getX() + 20);
-			}
-		}
+		// Equipo local
+		g.setColor(Color.CYAN);
+		g.drawString("J1: " + Math.max(lives1, 0) + " vidas", 25, 30);
+		g.drawString("J2: " + Math.max(lives2, 0) + " vidas", 25, 55);
 
-		// Vidas jugador 2 (un poco más abajo)
-		Vector2D lp2 = new Vector2D(25, 55);
-		g.drawImage(Assets.life, (int) lp2.getX(), (int) lp2.getY(), null);
-		g.drawImage(Assets.numbers[10], (int) lp2.getX() + 40, (int) lp2.getY() + 5, null);
-		if (lives2 > 0) {
-			String s2 = Integer.toString(lives2);
-			Vector2D pos = new Vector2D(lp2.getX(), lp2.getY());
-			for (int i = 0; i < s2.length(); i++) {
-				int n = Integer.parseInt(s2.substring(i, i + 1));
-				g.drawImage(Assets.numbers[n], (int) pos.getX() + 60, (int) pos.getY() + 5, null);
-				pos.setX(pos.getX() + 20);
-			}
-		}
+		// Equipo rival
+		g.setColor(Color.ORANGE);
+		g.drawString("E1: " + Math.max(livesEnemy1, 0) + " vidas", 25, 95);
+		g.drawString("E2: " + Math.max(livesEnemy2, 0) + " vidas", 25, 120);
 	}
 
 	public ArrayList<MovingObject> getMovingObjects() { return movingObjects; }
@@ -428,14 +439,29 @@ public class GameState extends State implements NetworkObserver {
 	public boolean subtractLife(Player who) {
 		if (who == player) {
 			lives1--;
-			// Game over solo si los DOS están en 0
-			if (lives1 <= 0 && lives2 <= 0) gameOver();
-			return lives1 > 0; // puede este jugador respawnear?
 		} else {
 			lives2--;
-			if (lives1 <= 0 && lives2 <= 0) gameOver();
-			return lives2 > 0;
 		}
+
+		boolean localAlive  = lives1 > 0 || lives2 > 0;
+		boolean remoteAlive = livesEnemy1 > 0 || livesEnemy2 > 0;
+
+		if (!localAlive && !remoteAlive) {
+			// Todos muertos: empate
+			gameOver();
+		} else if (!localAlive) {
+			// Mi equipo perdió, el otro gana
+			if (udpClient != null)
+				udpClient.send(new GameMessage(MessageType.WINNER, "local"));
+			State.changeState(new WinnerState("El equipo rival gana"));
+		}
+
+		// Avisar al otro PC que uno de mis jugadores perdió una vida
+		if (udpClient != null)
+			udpClient.send(new GameMessage(MessageType.ENEMY_DIED,
+					who == player ? "1" : "2"));
+
+		return who == player ? lives1 > 0 : lives2 > 0;
 	}
 
 	public void gameOver() {

@@ -15,7 +15,6 @@ import java.util.ArrayList;
  * para todos los elementos del juego que poseen movimiento, rotación y capacidad de colisión.
  * Gestiona aspectos comunes como la velocidad, el centro del objeto, sonidos de explosión
  * y la lógica de interacción física entre diferentes entidades.
- * * @author Gemini
  * @version 1.0
  */
 public abstract class MovingObject extends GameObject {

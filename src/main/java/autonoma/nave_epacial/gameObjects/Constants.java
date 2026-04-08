@@ -9,7 +9,6 @@ import org.json.JSONObject;
  * globales del juego NaveEspacial.
  * Incluye configuraciones de red, dimensiones de la ventana, propiedades de los
  * objetos del juego (jugador, meteoros, OVNIs) y rutas de archivos.
- * * @author Gemini
  * @version 1.0
  */
 public class Constants {

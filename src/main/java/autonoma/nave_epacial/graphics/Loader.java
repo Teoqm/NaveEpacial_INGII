@@ -15,7 +15,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * desde el sistema de archivos o el classpath.
  * Proporciona métodos estáticos para procesar imágenes, fuentes y archivos de audio,
  * encapsulando el manejo de excepciones común en la lectura de recursos.
- * * @author Gemini
  * @version 1.0
  */
 public class Loader {

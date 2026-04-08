@@ -15,7 +15,6 @@ import java.util.ArrayList;
  * y dispara proyectiles dirigidos hacia la posición del jugador.
  * Utiliza un algoritmo de búsqueda de objetivos (seek) y una lista de nodos
  * para navegar por el espacio de juego.
- * * @author Gemini
  * @version 1.0
  */
 public class Ufo extends MovingObject {

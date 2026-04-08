@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
  * interactivos y visuales dentro del juego NaveEspacial.
  * Define las propiedades fundamentales como la posición y la textura,
  * además de establecer el contrato para la actualización de lógica y renderizado.
- * * @author Gemini
  * @version 1.0
  */
 public abstract class GameObject {

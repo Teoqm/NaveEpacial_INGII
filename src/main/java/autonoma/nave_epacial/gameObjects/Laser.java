@@ -15,7 +15,6 @@ import java.awt.image.BufferedImage;
  * Implementa una lógica de proyectil que puede viajar entre diferentes instancias
  * de juego a través de la red y posee un periodo de gracia para evitar colisiones
  * con el emisor original.
- * * @author Gemini
  * @version 1.0
  */
 public class Laser extends MovingObject {

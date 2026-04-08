@@ -19,7 +19,6 @@ import java.awt.image.BufferedImage;
  * y la lógica de red para sincronizar la posición y el estado entre diferentes computadoras.
  * * Soporta diferentes esquemas de control (Flechas o WASD) y maneja estados de invulnerabilidad
  * temporal mediante un efecto de parpadeo al reaparecer.
- * * @author Gemini
  * @version 1.0
  */
 public class Player extends MovingObject {

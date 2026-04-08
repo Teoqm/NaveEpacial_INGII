@@ -13,7 +13,6 @@ import autonoma.nave_epacial.states.GameState;
  * La clase Message representa un texto flotante con efectos de transparencia (fade)
  * que se utiliza para mostrar notificaciones, puntajes o mensajes temporales en el juego.
  * Los mensajes se desplazan hacia arriba automáticamente y se destruyen al desvanecerse.
- * * @author Gemini
  * @version 1.0
  */
 public class Message {

@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
  * de los meteoros en el juego.
  * Cada tamaño especifica cuántos fragmentos se generarán al ser destruido
  * y qué texturas deben utilizar los fragmentos resultantes.
- * * @author Gemini
  * @version 1.0
  */
 public enum Size {

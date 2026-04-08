@@ -7,7 +7,6 @@ import javax.sound.sampled.FloatControl;
  * La clase Sound proporciona una interfaz simplificada para la gestión de audio.
  * Permite controlar la reproducción, detención, bucles y ajuste de volumen
  * de los recursos sonoros cargados en el juego.
- * * @author Gemini
  * @version 1.0
  */
 public class Sound {

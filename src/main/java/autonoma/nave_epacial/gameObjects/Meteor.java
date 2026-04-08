@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
  * Estos objetos se desplazan por la pantalla con un movimiento constante y rotación,
  * poseen la capacidad de dividirse en fragmentos más pequeños al ser destruidos
  * y pueden transferirse entre diferentes instancias de juego mediante red UDP.
- * * @author Gemini
  * @version 1.0
  */
 public class Meteor extends MovingObject {

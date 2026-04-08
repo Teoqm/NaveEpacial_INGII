@@ -5,7 +5,6 @@ package autonoma.nave_epacial.gameObjects;
  * para controlar eventos basados en el tiempo dentro del juego.
  * Permite ejecutar una cuenta regresiva o esperar un intervalo específico
  * antes de detenerse automáticamente.
- * * @author Gemini
  * @version 1.0
  */
 public class Chronometer {

@@ -9,7 +9,6 @@ import java.awt.*;
  * en la pantalla de forma simplificada.
  * Permite gestionar el color, la fuente y el alineamiento (centrado o por coordenadas directas)
  * calculando automáticamente las métricas de la fuente necesarias.
- * * @author Gemini
  * @version 1.0
  */
 public class Text {

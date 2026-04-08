@@ -10,7 +10,6 @@ import java.util.Vector;
  * (frames) a una velocidad determinada.
  * Se utiliza principalmente para efectos visuales temporales, como explosiones o
  * propulsores, controlando su ciclo de vida desde el inicio hasta su finalización.
- * * @author Gemini
  * @version 1.0
  */
 public class Animation {

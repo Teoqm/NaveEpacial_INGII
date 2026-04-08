@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
  * a todos los recursos multimedia del juego, incluyendo imágenes, sonidos y fuentes.
  * Utiliza métodos estáticos para permitir que cualquier componente del juego
  * acceda a los recursos cargados tras la inicialización.
- * * @author Gemini
  * @version 1.0
  */
 public class Assets {

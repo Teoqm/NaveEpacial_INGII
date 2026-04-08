@@ -18,6 +18,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * GameState es la clase principal que controla el flujo y la lógica de una partida activa.
+ * Implementa {@link NetworkObserver} para procesar paquetes UDP y sincronizar el estado del
+ * juego entre dos equipos en tiempo real.
+ * * Gestiona la actualización de entidades, el sistema de puntuación persistente, la lógica
+ * de colisiones y la renderización de la interfaz de usuario.
+ * * @version 1.0
+ */
 public class GameState extends State implements NetworkObserver {
 
 	public static final Vector2D PLAYER_START_POSITION = new Vector2D(

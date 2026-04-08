@@ -4,54 +4,65 @@ import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * La clase Assets es la encargada de centralizar, cargar y proporcionar acceso
+ * a todos los recursos multimedia del juego, incluyendo imágenes, sonidos y fuentes.
+ * Utiliza métodos estáticos para permitir que cualquier componente del juego
+ * acceda a los recursos cargados tras la inicialización.
+ * * @author Gemini
+ * @version 1.0
+ */
 public class Assets {
 
+	/** Indica si todos los recursos han sido cargados exitosamente. */
 	public static boolean loaded = false;
+	/** Contador actual de recursos cargados (útil para barras de progreso). */
 	public static float count = 0;
+	/** Cantidad total de recursos que deben ser cargados. */
 	public static float MAX_COUNT = 46;
 
-
+	/** Imagen de la nave del jugador. */
 	public static BufferedImage player;
-	/// effects
 
+	/** Imagen del efecto de propulsión (fuego). */
 	public static BufferedImage speed;
 
-	//laserts
+	/** Imágenes para los diferentes tipos de láseres (azul, verde y rojo). */
+	public static BufferedImage blueLaser, greenLaser, redLaser;
 
-	public static BufferedImage blueLaser,greenLaser,redLaser;
+	/** Arreglo de imágenes que componen la animación de explosión. */
+	public static BufferedImage[] exp = new BufferedImage[9];
 
-	//explosion
-
-	public static BufferedImage[] exp= new BufferedImage[9];
-
-	//enemies
-
+	/** Imagen de la nave enemiga OVNI. */
 	public static BufferedImage ufo;
 
-	// fonts
-
+	/** Fuente principal en tamaño grande. */
 	public static Font fontBig;
+	/** Fuente principal en tamaño mediano. */
 	public static Font fontMed;
 
+	/** Clips de audio para música de fondo, explosiones y disparos. */
 	public static Clip backgroundMusic, explosion, playerLoose, playerShoot, ufoShoot;
 
-
-	//meteors
-
+	/** Arreglos de imágenes para meteoros de distintos tamaños. */
 	public static BufferedImage[] bigs = new BufferedImage[4];
 	public static BufferedImage[] meds = new BufferedImage[2];
 	public static BufferedImage[] smalls = new BufferedImage[2];
 	public static BufferedImage[] tinies = new BufferedImage[2];
 
+	/** Imágenes para la representación visual de números y vidas. */
 	public static BufferedImage[] numbers = new BufferedImage[11];
 	public static BufferedImage life;
 
-	// ui
-
+	/** Imágenes para los componentes de la interfaz de usuario (botones). */
 	public static BufferedImage blueBtn;
 	public static BufferedImage greyBtn;
 
-
+	/**
+	 * Inicializa la carga de todos los recursos del juego.
+	 * Este método debe invocarse al inicio para asegurar que los objetos
+	 * tengan acceso a sus texturas y sonidos.
+	 */
 	public static void init()
 	{
 		player = loadImage("/ships/player_1.png");
@@ -103,18 +114,34 @@ public class Assets {
 		loaded = true;
 	}
 
-
+	/**
+	 * Carga una imagen desde la ruta especificada e incrementa el contador de recursos.
+	 * * @param path Ruta del archivo de imagen.
+	 * @return {@link BufferedImage} con los datos de la imagen.
+	 */
 	public static BufferedImage loadImage(String path) {
 		count ++;
 		return Loader.ImageLoader(path);
 	}
+
+	/**
+	 * Carga una fuente TrueType (.ttf) y le asigna un tamaño.
+	 * * @param path Ruta del archivo de fuente.
+	 * @param size Tamaño de la fuente a cargar.
+	 * @return Objeto {@link Font} configurado.
+	 */
 	public static Font loadFont(String path, int size) {
 		count ++;
 		return Loader.loadFont(path, size);
 	}
+
+	/**
+	 * Carga un archivo de audio en formato Clip.
+	 * * @param path Ruta del archivo de sonido (.wav).
+	 * @return Objeto {@link Clip} listo para ser reproducido.
+	 */
 	public static Clip loadSound(String path) {
 		count ++;
 		return Loader.loadSound(path);
 	}
-
 }

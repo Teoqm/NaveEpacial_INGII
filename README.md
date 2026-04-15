@@ -44,6 +44,51 @@ JUGADOR 2
 - S Letra S → Girar a la derecha
 - 🔫 R → Disparar
 
+## 📜 Reglas del juego
+
+### 🎮 Objetivo
+Acumular la mayor cantidad de puntos como equipo eliminando rivales y sobreviviendo en el entorno.
+
+### 👥 Equipos
+- El juego se desarrolla entre **2 equipos de 2 jugadores**.
+- Cada jugador controla una nave espacial.
+- Los puntos se suman de forma **colectiva por equipo**.
+
+### ❤️ Sistema de vidas
+- Cada jugador cuenta con **3 vidas**.
+- Al ser destruido, el jugador pierde una vida.
+- Cuando un jugador pierde todas sus vidas, queda eliminado de la partida.
+
+### ⚔️ Combate
+- Los jugadores pueden disparar proyectiles para eliminar enemigos.
+- Es posible eliminar jugadores del equipo contrario para ganar puntos.
+- ⚠️ **Fuego amigo activado**: un jugador puede dañar o destruir a su propio compañero.
+
+### ☄️ Obstáculos
+- Los meteoritos aparecen constantemente en el mapa.
+- Representan una amenaza para todos los jugadores.
+- Al ser destruidos, pueden dividirse en fragmentos más pequeños.
+
+### 👾 Enemigos
+- Existen enemigos tipo UFO que aparecen durante la partida.
+- Estos enemigos pueden disparar y destruir a cualquier jugador.
+
+### 💀 Condiciones de daño/eliminación
+Un jugador pierde una vida si:
+- Colisiona con un meteorito
+- Recibe un disparo (enemigo, rival o aliado)
+- Colisiona con un enemigo (UFO)
+
+### 🧮 Sistema de puntaje
+- Se obtienen puntos al:
+  - Eliminar jugadores del equipo rival
+  - Destruir meteoritos
+  - Destruir enemigos (UFO)
+- El puntaje se acumula por equipo.
+
+### 🏆 Condición de victoria
+- El equipo con **mayor puntaje al final de la partida** es el ganador.
+
 ## 🛠️ Tecnologías utilizadas
 
 | Tecnología   | Descripción |

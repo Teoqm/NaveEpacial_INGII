@@ -12,11 +12,11 @@ import java.util.ArrayList;
  * La clase MenuState representa la interfaz principal de navegación del juego.
  * Gestiona una colección de botones interactivos que permiten al usuario iniciar
  * una partida, consultar las puntuaciones más altas o salir de la aplicación.
- * * Implementa la lógica de actualización y renderizado de los componentes de la
+ * Implementa la lógica de actualización y renderizado de los componentes de la
  * interfaz de usuario (UI) definidos para el menú.
- * * @version 1.0
+ * @version 1.0
  */
-public class MenuState extends State{
+public class MenuState extends State {
 
     /** Lista de botones presentes en el menú principal. */
     private ArrayList<Button> buttons;
@@ -29,17 +29,17 @@ public class MenuState extends State{
     public MenuState() {
         buttons = new ArrayList<Button>();
 
-        // Botón para iniciar el juego
+        // Botón para iniciar el juego — va a LobbyState para capturar nombres
         buttons.add(new Button(
                 Assets.greyBtn,
                 Assets.blueBtn,
-                Constants.WIDTH / 2 - Assets.greyBtn.getWidth()/2,
+                Constants.WIDTH / 2 - Assets.greyBtn.getWidth() / 2,
                 Constants.HEIGHT / 2 - Assets.greyBtn.getHeight() * 2,
                 Constants.PLAY,
                 new Action() {
                     @Override
                     public void doAction() {
-                        State.changeState(new GameState());
+                        State.changeState(new LobbyState());
                     }
                 }
         ));
@@ -48,8 +48,8 @@ public class MenuState extends State{
         buttons.add(new Button(
                 Assets.greyBtn,
                 Assets.blueBtn,
-                Constants.WIDTH / 2 - Assets.greyBtn.getWidth()/2,
-                Constants.HEIGHT / 2 + Assets.greyBtn.getHeight() * 2 ,
+                Constants.WIDTH / 2 - Assets.greyBtn.getWidth() / 2,
+                Constants.HEIGHT / 2 + Assets.greyBtn.getHeight() * 2,
                 Constants.EXIT,
                 new Action() {
                     @Override
@@ -63,13 +63,28 @@ public class MenuState extends State{
         buttons.add(new Button(
                 Assets.greyBtn,
                 Assets.blueBtn,
-                Constants.WIDTH / 2 - Assets.greyBtn.getWidth()/2,
+                Constants.WIDTH / 2 - Assets.greyBtn.getWidth() / 2,
                 Constants.HEIGHT / 2,
                 Constants.HIGH_SCORES,
                 new Action() {
                     @Override
                     public void doAction() {
                         State.changeState(new ScoreState());
+                    }
+                }
+        ));
+
+        // Botón para ver las reglas del juego
+        buttons.add(new Button(
+                Assets.greyBtn,
+                Assets.blueBtn,
+                Constants.WIDTH / 2 - Assets.greyBtn.getWidth() / 2,
+                Constants.HEIGHT / 2 + Assets.greyBtn.getHeight(),
+                Constants.RULES,
+                new Action() {
+                    @Override
+                    public void doAction() {
+                        State.changeState(new RulesState());
                     }
                 }
         ));
@@ -81,7 +96,7 @@ public class MenuState extends State{
      */
     @Override
     public void update() {
-        for(Button b: buttons) {
+        for (Button b : buttons) {
             b.update();
         }
     }
@@ -92,9 +107,8 @@ public class MenuState extends State{
      */
     @Override
     public void draw(Graphics g) {
-        for(Button b: buttons) {
+        for (Button b : buttons) {
             b.draw(g);
         }
     }
-
 }

@@ -11,37 +11,33 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
- * La clase JSONParser se encarga de la gestión de persistencia de datos para el juego.
- * Proporciona métodos estáticos para leer y escribir archivos en formato JSON,
- * permitiendo almacenar el historial de puntuaciones (High Scores) de manera local.
- * * @version 1.0
+ * Gestiona la persistencia de puntuaciones en formato JSON.
+ * @version 1.0
  */
 public class JSONParser {
 
     /**
-     * Lee el archivo de puntuaciones definido en las constantes del juego y
-     * transforma el contenido JSON en una lista de objetos ScoreData.
-     * * @return Una lista {@link ArrayList} de {@link ScoreData} con los registros encontrados.
-     * Si el archivo no existe o está vacío, devuelve una lista vacía.
-     * @throws FileNotFoundException Si ocurre un error al intentar acceder al archivo físico.
+     * Lee el archivo de puntuaciones y retorna la lista de registros.
+     *
+     * @return lista de {@link ScoreData} leídos del archivo.
+     * @throws FileNotFoundException si el archivo no puede accederse.
      */
     public static ArrayList<ScoreData> readFile() throws FileNotFoundException {
         ArrayList<ScoreData> dataList = new ArrayList<>();
-
         File file = new File(Constants.SCORE_PATH);
 
-        if (!file.exists() || file.length() == 0){
-            return dataList;
-        }
+        if (!file.exists() || file.length() == 0) return dataList;
 
-        JSONTokener parser = new JSONTokener(new FileInputStream(file));
-        JSONArray jsonList = new JSONArray(parser);
+        JSONTokener parser  = new JSONTokener(new FileInputStream(file));
+        JSONArray   jsonList = new JSONArray(parser);
 
         for (int i = 0; i < jsonList.length(); i++) {
-            JSONObject obj = jsonList.getJSONObject(i);
-            ScoreData data = new ScoreData();
+            JSONObject obj  = jsonList.getJSONObject(i);
+            ScoreData  data = new ScoreData();
             data.setScore(obj.getInt("score"));
             data.setDate(obj.getString("date"));
+            // Compatibilidad con registros antiguos sin campo team
+            data.setTeam(obj.optString("team", "Equipo"));
             dataList.add(data);
         }
 
@@ -49,12 +45,13 @@ public class JSONParser {
     }
 
     /**
-     * Serializa una lista de objetos ScoreData a formato JSON y la guarda en el disco duro.
-     * Si las carpetas del destino no existen, el método intenta crearlas automáticamente.
-     * * @param dataList La lista de objetos {@link ScoreData} que se desea persistir.
-     * @throws IOException Si ocurre un error durante la creación del archivo o el proceso de escritura.
+     * Serializa la lista de puntuaciones a JSON y la guarda en disco.
+     *
+     * @param dataList lista de {@link ScoreData} a persistir.
+     * @throws IOException si ocurre un error de escritura.
      */
-    public static void writeFile (ArrayList<ScoreData> dataList) throws IOException {
+    public static void writeFile(ArrayList<ScoreData> dataList) throws IOException {
+        System.out.println("[JSON] Guardando en: " + new java.io.File(Constants.SCORE_PATH).getAbsolutePath());
         File outputFile = new File(Constants.SCORE_PATH);
         outputFile.getParentFile().mkdirs();
         outputFile.createNewFile();
@@ -62,9 +59,9 @@ public class JSONParser {
         JSONArray jsonList = new JSONArray();
         for (ScoreData data : dataList) {
             JSONObject obj = new JSONObject();
+            obj.put("team",  data.getTeam());
             obj.put("score", data.getScore());
-            obj.put("date", data.getDate());
-
+            obj.put("date",  data.getDate());
             jsonList.put(obj);
         }
 

@@ -18,6 +18,7 @@ import java.util.ArrayList;
  * @version 1.0
  */
 public abstract class MovingObject extends GameObject {
+
     /** Vector que representa la dirección y magnitud del movimiento actual. */
     protected Vector2D velocity;
     /** Transformación afín utilizada para el renderizado con rotación y traslación. */
@@ -41,28 +42,35 @@ public abstract class MovingObject extends GameObject {
 
     /**
      * Construye un nuevo MovingObject inicializando sus propiedades físicas y sonoras.
-     * * @param position  Posición inicial.
+     *
+     * @param position  Posición inicial.
      * @param velocity  Vector de velocidad inicial.
      * @param maxVel    Velocidad máxima permitida.
      * @param texture   Imagen que representa al objeto.
      * @param gameState Estado del juego para la gestión de colisiones.
      */
-    public MovingObject(Vector2D position, Vector2D velocity, double maxVel, BufferedImage texture, GameState gameState) {
+    public MovingObject(Vector2D position, Vector2D velocity, double maxVel,
+                        BufferedImage texture, GameState gameState) {
         super(position, texture);
-        this.velocity = velocity;
-        this.maxVel = maxVel;
+        this.velocity  = velocity;
+        this.maxVel    = maxVel;
         this.gameState = gameState;
-        width = texture.getWidth();
-        height = texture.getHeight();
-        angle = 0;
-        explosion = new Sound(Assets.explosion);
-        Dead = false;
+        width          = texture.getWidth();
+        height         = texture.getHeight();
+        angle          = 0;
+        explosion      = new Sound(Assets.explosion);
+        Dead           = false;
     }
 
     /**
-     * Evalúa colisiones circulares con otros objetos en movimiento dentro del juego.
-     * Incluye lógica de filtrado para redes, asegurando que las colisiones solo
-     * se procesen si los jugadores involucrados están activos en la pantalla local.
+     * Evalúa colisiones con otros objetos en la pantalla local.
+     *
+     * Reglas de filtrado:
+     * 1. Jugadores REMOTOS nunca colisionan en esta PC — sus colisiones
+     *    las procesa su propia PC y se notifican por YOU_DIED.
+     * 2. Jugadores locales fuera de pantalla: ignorar.
+     * 3. Si YO soy remoto, no proceso colisiones.
+     * 4. Si YO soy jugador local fuera de pantalla, no colisionar.
      */
     protected void collidesWith() {
         ArrayList<MovingObject> movingObjects = gameState.getMovingObjects();
@@ -70,20 +78,16 @@ public abstract class MovingObject extends GameObject {
             MovingObject m = movingObjects.get(i);
             if (m.equals(this)) continue;
 
-            // Si m es un jugador, solo colisionar si está en ESTA pantalla
             if (m instanceof Player) {
                 Player p = (Player) m;
-                // Jugador remoto: solo si está en esta pantalla
-                if (p.isRemote() && !p.isOnMyScreen()) continue;
-                // Jugador local: solo si está en esta pantalla
-                if (!p.isRemote() && !p.isOnMyScreen()) continue;
+                // Solo colisionar con jugador (local o remoto) si está físicamente aquí
+                if (!p.isOnMyScreen()) continue;
+                // Jugador spawneando: inmune
+                if (p.isSpawning()) continue;
             }
 
-            // Si YO soy un jugador local, solo colisionar si estoy en esta pantalla
-            if (this instanceof Player) {
-                Player me = (Player) this;
-                if (!me.isRemote() && !me.isOnMyScreen()) continue;
-            }
+            // Si YO soy jugador fuera de pantalla, no colisionar
+            if (this instanceof Player && !((Player) this).isOnMyScreen()) continue;
 
             double distance = m.getCenter().subtract(getCenter()).getMagnitude();
             if (distance < m.width / 2 + width / 2
@@ -95,16 +99,18 @@ public abstract class MovingObject extends GameObject {
 
     /**
      * Gestiona las consecuencias de una colisión confirmada entre dos objetos.
-     * Define excepciones (como colisiones entre meteoros o jugadores aliados)
-     * y activa los efectos de explosión y destrucción.
-     * * @param a Primer objeto involucrado en la colisión.
+     * Nunca destruye jugadores remotos — eso lo hace el otro PC.
+     *
+     * @param a Primer objeto involucrado en la colisión.
      * @param b Segundo objeto involucrado en la colisión.
      */
     private void objectCollision(MovingObject a, MovingObject b) {
         // Dos jugadores no se destruyen entre sí
         if (a instanceof Player && b instanceof Player) return;
+        // Jugador spawneando: inmune
         if (a instanceof Player && ((Player) a).isSpawning()) return;
         if (b instanceof Player && ((Player) b).isSpawning()) return;
+        // Dos meteoros no colisionan
         if (a instanceof Meteor && b instanceof Meteor) return;
 
         gameState.playExplosion(getCenter());
@@ -112,40 +118,43 @@ public abstract class MovingObject extends GameObject {
         b.destroy();
     }
 
-
     /**
      * Marca al objeto como muerto y reproduce el sonido de explosión.
      * Los objetos de tipo {@link Laser} no disparan el sonido de explosión por defecto.
      */
-    protected void destroy(){
+    protected void destroy() {
         Dead = true;
-        if(!(this instanceof Laser))
+        if (!(this instanceof Laser))
             explosion.play();
     }
 
     /**
      * Calcula el punto central del objeto basándose en su posición y dimensiones.
-     * * @return Un {@link Vector2D} que representa el centro del objeto.
+     *
+     * @return Un {@link Vector2D} que representa el centro del objeto.
      */
-    protected Vector2D getCenter(){
-        return new Vector2D(position.getX() + width/2, position.getY() + height/2);
+    protected Vector2D getCenter() {
+        return new Vector2D(position.getX() + width / 2, position.getY() + height / 2);
     }
 
     /**
      * Verifica si el objeto ha sido destruido.
-     * * @return {@code true} si el objeto está muerto, {@code false} de lo contrario.
+     *
+     * @return {@code true} si el objeto está muerto, {@code false} de lo contrario.
      */
-    public boolean isDead() {return Dead;}
+    public boolean isDead() { return Dead; }
 
     /**
      * Obtiene el ángulo actual de rotación.
-     * * @return Ángulo en radianes.
+     *
+     * @return Ángulo en radianes.
      */
-    public double getAngle()          { return angle; }
+    public double getAngle() { return angle; }
 
     /**
      * Establece el ángulo de rotación del objeto.
-     * * @param a Nuevo ángulo en radianes.
+     *
+     * @param a Nuevo ángulo en radianes.
      */
-    public void   setAngle(double a)  { this.angle = a; }
+    public void setAngle(double a) { this.angle = a; }
 }

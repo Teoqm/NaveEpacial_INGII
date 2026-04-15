@@ -50,5 +50,8 @@ public enum MessageType {
     LASER2_CROSS,
 
     /** Notifica que el Jugador 2 ha perdido una vida o ha muerto. */
-    YOU_DIED2
+    YOU_DIED2,
+
+    /** Sincronizar puntaje en tiempo real */
+    SCORE_UPDATE
 }

@@ -21,13 +21,21 @@ import java.awt.image.BufferedImage;
 public class Meteor extends MovingObject {
 
     /** El tamaño actual del meteoro (Grande, Mediano o Pequeño). */
-    private final Size      size;
+    private final Size size;
+
     /** Cliente UDP utilizado para sincronizar el cruce del meteoro entre pantallas. */
     private UdpClient udpClient;
 
     /**
+     * Indica si este meteoro fue recibido desde la otra PC por red.
+     * Si es true, al ser destruido no otorga puntos para evitar duplicación de puntaje.
+     */
+    private boolean transferred = false;
+
+    /**
      * Construye un nuevo Meteor con dimensiones, velocidad y tamaño específicos.
-     * * @param position  Coordenadas iniciales en el espacio de juego.
+     *
+     * @param position  Coordenadas iniciales en el espacio de juego.
      * @param velocity  Vector de dirección del movimiento.
      * @param maxVel    Velocidad máxima permitida para este meteoro.
      * @param texture   Imagen visual del meteoro.
@@ -43,9 +51,19 @@ public class Meteor extends MovingObject {
 
     /**
      * Establece el cliente UDP para la comunicación entre pares.
-     * * @param client Instancia de {@link UdpClient}.
+     *
+     * @param client Instancia de {@link UdpClient}.
      */
     public void setUdpClient(UdpClient client) { this.udpClient = client; }
+
+    /**
+     * Marca este meteoro como transferido desde la otra PC.
+     * Los meteoros transferidos no otorgan puntos al ser destruidos
+     * para evitar duplicación de puntaje entre las dos instancias del juego.
+     *
+     * @param transferred true si el meteoro llegó por red, false si es local.
+     */
+    public void setTransferred(boolean transferred) { this.transferred = transferred; }
 
     /**
      * Actualiza la posición y rotación del meteoro.
@@ -72,14 +90,14 @@ public class Meteor extends MovingObject {
 
         angle += Constants.DELTAANGLE / 2;
 
-        // FIX: verificar colisiones con jugadores y lasers
         collidesWith();
     }
 
     /**
      * Notifica a través de la red que el meteoro ha salido de la pantalla
      * local para aparecer en la del equipo remoto.
-     * * @param side Lado por el cual salió el objeto ("LEFT" o "RIGHT").
+     *
+     * @param side Lado por el cual salió el objeto ("LEFT" o "RIGHT").
      */
     private void sendCross(String side) {
         if (udpClient == null) return;
@@ -92,27 +110,33 @@ public class Meteor extends MovingObject {
                 size.name()));
     }
 
-    /** * Realiza una eliminación del objeto sin activar eventos de juego.
+    /**
+     * Realiza una eliminación silenciosa del objeto sin activar eventos de juego.
      * Se utiliza cuando el meteoro simplemente sale del área local hacia la red.
      */
     private void destroyQuiet() {
         super.destroy();
     }
 
-    /** * Realiza la destrucción completa del meteoro.
-     * Este método se activa al recibir un impacto, otorgando puntaje al jugador
-     * y activando la lógica de división en meteoros más pequeños.
+    /**
+     * Realiza la destrucción completa del meteoro al recibir un impacto.
+     * Activa la lógica de división en meteoros más pequeños y una explosión visual.
+     * Solo otorga puntos si el meteoro es local (no fue transferido por red),
+     * evitando así la duplicación de puntaje entre las dos PCs.
      */
     @Override
     public void destroy() {
         gameState.divideMeteor(this);
-        gameState.addScore(Constants.METEOR_SCORE, position);
+        gameState.playExplosion(position);
+        if (!transferred)
+            gameState.addScore(Constants.METEOR_SCORE, position);
         super.destroy();
     }
 
     /**
      * Renderiza el meteoro aplicando una rotación continua sobre su centro.
-     * * @param g Contexto gráfico para el dibujo.
+     *
+     * @param g Contexto gráfico para el dibujo.
      */
     @Override
     public void draw(Graphics g) {
@@ -124,7 +148,8 @@ public class Meteor extends MovingObject {
 
     /**
      * Obtiene el tamaño actual del meteoro.
-     * * @return El valor del enumerador {@link Size}.
+     *
+     * @return El valor del enumerador {@link Size}.
      */
     public Size getSize() { return size; }
 }

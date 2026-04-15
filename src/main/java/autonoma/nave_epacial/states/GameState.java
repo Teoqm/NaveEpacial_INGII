@@ -7,16 +7,21 @@ import autonoma.nave_epacial.graphics.Animation;
 import autonoma.nave_epacial.graphics.Assets;
 import autonoma.nave_epacial.graphics.Sound;
 import autonoma.nave_epacial.math.Vector2D;
-import autonoma.nave_epacial.network.GameMessage;
-import autonoma.nave_epacial.network.NetworkObserver;
-import autonoma.nave_epacial.network.UdpClient;
-
+import autonoma.nave_epacial.network.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * GameState es la clase principal que controla el flujo y la lógica de una partida activa.
+ * Implementa {@link NetworkObserver} para procesar paquetes UDP y sincronizar el estado del
+ * juego entre dos equipos en tiempo real.
+ * Gestiona la actualización de entidades, el sistema de puntuación persistente, la lógica
+ * de colisiones y la renderización de la interfaz de usuario.
+ * @version 1.0
+ */
 public class GameState extends State implements NetworkObserver {
 
 	public static final Vector2D PLAYER_START_POSITION = new Vector2D(
@@ -35,16 +40,34 @@ public class GameState extends State implements NetworkObserver {
 	private Player enemy;
 	private Player enemy2;
 
+	private boolean pendingLoss    = false;
+	private long    tiempoPerdida  = 0;
+
 	private final ArrayList<MovingObject> movingObjects = new ArrayList<>();
 	private final ArrayList<MovingObject> objectsToAdd  = new ArrayList<>();
 	private final ArrayList<Animation>    explosions    = new ArrayList<>();
 	private final ArrayList<Message>      messages      = new ArrayList<>();
 
-	private int score = 0;
-	private int lives1 = 3;
-	private int lives2 = 3;
+	private int score      = 0;
+	private int scoreRival = 0;
+
+	private int lives1      = 3;
+	private int lives2      = 3;
+	private int livesEnemy1 = 3;
+	private int livesEnemy2 = 3;
+
 	private int meteors;
 	private int waves = 1;
+
+	// Nombres jugadores locales
+	private String nombreJ1;
+	private String nombreJ2;
+	// Nombres jugadores remotos (se muestran como rival hasta recibir los reales)
+	private String nombreE1 = "Rival 1";
+	private String nombreE2 = "Rival 2";
+
+	// Tiempo de inicio para calcular duración de la partida
+	private long tiempoInicio = System.currentTimeMillis();
 
 	private Sound       backgroundMusic;
 	private Chronometer gameOverTimer;
@@ -52,7 +75,15 @@ public class GameState extends State implements NetworkObserver {
 	private Chronometer ufoSpawner;
 	private UdpClient   udpClient;
 
-	public GameState() {
+	/**
+	 * Constructor que recibe los nombres capturados en LobbyState.
+	 *
+	 * @param nombreJ1 nombre del jugador 1 (flechas)
+	 * @param nombreJ2 nombre del jugador 2 (WASD)
+	 */
+	public GameState(String nombreJ1, String nombreJ2) {
+		this.nombreJ1 = nombreJ1;
+		this.nombreJ2 = nombreJ2;
 
 		// Jugador 1 local — flechas
 		player = new Player(PLAYER_START_POSITION, new Vector2D(),
@@ -63,14 +94,14 @@ public class GameState extends State implements NetworkObserver {
 
 		// Jugador 2 local — WASD
 		player2 = new Player(PLAYER2_START_POSITION, new Vector2D(),
-				Constants.PLAYER_MAX_VEL, Assets.player, this,
+				Constants.PLAYER_MAX_VEL, Assets.player2, this,
 				Player.InputScheme.WASD);
 		player2.setRemote(false);
 		movingObjects.add(player2);
 
 		// Enemigo 1 remoto
 		enemy = new Player(new Vector2D(-200, -200), new Vector2D(),
-				Constants.PLAYER_MAX_VEL, Assets.player, this,
+				Constants.PLAYER_MAX_VEL, Assets.playerEnemy1, this,
 				Player.InputScheme.ARROWS);
 		enemy.setRemote(true);
 		enemy.setOnMyScreen(false);
@@ -78,7 +109,7 @@ public class GameState extends State implements NetworkObserver {
 
 		// Enemigo 2 remoto
 		enemy2 = new Player(new Vector2D(-200, -200), new Vector2D(),
-				Constants.PLAYER_MAX_VEL, Assets.player, this,
+				Constants.PLAYER_MAX_VEL, Assets.playerEnemy2, this,
 				Player.InputScheme.WASD);
 		enemy2.setRemote(true);
 		enemy2.setOnMyScreen(false);
@@ -95,20 +126,22 @@ public class GameState extends State implements NetworkObserver {
 		ufoSpawner.run(Constants.UFO_SPAWN_RATE);
 
 		try {
+			NetworkConfig cfg = NetworkConfig.getInstance();
 			udpClient = new UdpClient(
-					Constants.LOCAL_PORT,
-					Constants.REMOTE_IP,
-					Constants.REMOTE_PORT,
+					cfg.getLocalPort(),
+					cfg.getRemoteIp(),
+					cfg.getRemotePort(),
 					this);
 			new Thread(udpClient).start();
-
 			player.setUdpClient(udpClient);
 			player2.setUdpClient(udpClient);
 			enemy.setUdpClient(udpClient);
 			enemy2.setUdpClient(udpClient);
-
+			System.out.println("[RED] Conectado -> IP: " + cfg.getRemoteIp()
+					+ " | Local: " + cfg.getLocalPort()
+					+ " | Remoto: " + cfg.getRemotePort());
 		} catch (Exception e) {
-			System.err.println("Red no disponible: " + e.getMessage());
+			System.err.println("[RED] No disponible (single-player): " + e.getMessage());
 		}
 
 		startWave();
@@ -118,61 +151,99 @@ public class GameState extends State implements NetworkObserver {
 	public void onMessageReceived(GameMessage msg) {
 		switch (msg.type) {
 
+			case ENEMY_DIED: {
+				String which = msg.data[0];
+				if (which.equals("1")) livesEnemy1--;
+				else                   livesEnemy2--;
+
+				if (msg.data.length > 1)
+					scoreRival = Integer.parseInt(msg.data[1]);
+
+				boolean remoteAlive = livesEnemy1 > 0 || livesEnemy2 > 0;
+				boolean localAlive  = lives1 > 0 || lives2 > 0;
+
+				if (!remoteAlive && localAlive) {
+					long tiempo = (System.currentTimeMillis() - tiempoInicio) / 1000;
+					score += 500;
+
+					// Enviar score final con bonus al perdedor
+					if (udpClient != null)
+						udpClient.send(new GameMessage(MessageType.SCORE_UPDATE,
+								String.valueOf(score)));
+
+					// Esperar que PC2 reciba el score antes de cerrar
+					try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+
+					try {
+						ArrayList<ScoreData> dataList = JSONParser.readFile();
+						dataList.add(new ScoreData(nombreJ1 + " y " + nombreJ2, score));
+						if (dataList.size() > 10) dataList = new ArrayList<>();
+						JSONParser.writeFile(dataList);
+					} catch (Exception e) { e.printStackTrace(); }
+
+					if (udpClient != null) { udpClient.stop(); udpClient = null; }
+					NetworkConfig.reset();
+
+					State.changeState(new WinnerState(
+							nombreJ1 + " y " + nombreJ2,
+							score, scoreRival, tiempo));
+				}
+				break;
+			}
+
+			case WINNER: {
+				int scoreDelPerdedor = Integer.parseInt(msg.data[0]);
+				long tiempo = (System.currentTimeMillis() - tiempoInicio) / 1000;
+
+				// scoreDelPerdedor es el score FINAL del que perdió
+				// Yo soy el ganador, sumo +500
+				score += 500;
+
+				try {
+					ArrayList<ScoreData> dataList = JSONParser.readFile();
+					dataList.add(new ScoreData(nombreJ1 + " y " + nombreJ2, score));
+					if (dataList.size() > 10) dataList = new ArrayList<>();
+					JSONParser.writeFile(dataList);
+				} catch (Exception e) { e.printStackTrace(); }
+
+				if (udpClient != null) { udpClient.stop(); udpClient = null; }
+				NetworkConfig.reset();
+
+				State.changeState(new WinnerState(
+						nombreJ1 + " y " + nombreJ2,
+						score,             // mi score con +500
+						scoreDelPerdedor,  // score exacto del perdedor
+						tiempo));
+				break;
+			}
+
+			case SCORE_UPDATE: {
+				scoreRival = Integer.parseInt(msg.data[0]);
+				break;
+			}
+
 			// ── Jugador remoto 1 ──────────────────────────────────
-			case PLAYER_STATE: {
-				updateRemotePosition(enemy, msg, true);
-				break;
-			}
-			case PLAYER_CROSS: {
-				applyPlayerCross(enemy, msg);
-				break;
-			}
-			case SPAWN_LASER: {
-				spawnRemoteLaser(msg);
-				break;
-			}
-			case LASER_CROSS: {
-				spawnCrossedLaser(msg);
-				break;
-			}
-			case YOU_DIED: {
-				player.destroy();
-				break;
-			}
+			case PLAYER_STATE:  { updateRemotePosition(enemy,  msg); break; }
+			case PLAYER_CROSS:  { applyPlayerCross(enemy,  msg);     break; }
+			case SPAWN_LASER:   { spawnRemoteLaser(msg);              break; }
+			case LASER_CROSS:   { spawnCrossedLaser(msg);             break; }
+			case YOU_DIED:      { player.destroy();                   break; }
 
 			// ── Jugador remoto 2 ──────────────────────────────────
-			case PLAYER2_STATE: {
-				updateRemotePosition(enemy2, msg, true);
-				break;
-			}
-			case PLAYER2_CROSS: {
-				applyPlayerCross(enemy2, msg);
-				break;
-			}
-			case SPAWN_LASER2: {
-				spawnRemoteLaser(msg);
-				break;
-			}
-			case LASER2_CROSS: {
-				spawnCrossedLaser(msg);
-				break;
-			}
-			case YOU_DIED2: {
-				player2.destroy();
-				break;
-			}
+			case PLAYER2_STATE: { updateRemotePosition(enemy2, msg); break; }
+			case PLAYER2_CROSS: { applyPlayerCross(enemy2, msg);     break; }
+			case SPAWN_LASER2:  { spawnRemoteLaser(msg);              break; }
+			case LASER2_CROSS:  { spawnCrossedLaser(msg);             break; }
+			case YOU_DIED2:     { player2.destroy();                  break; }
 
-			// ── Meteoros (compartidos) ────────────────────────────
-			case METEOR_CROSS: {
-				spawnCrossedMeteor(msg);
-				break;
-			}
+			// ── Meteoros ─────────────────────────────────────────
+			case METEOR_CROSS:  { spawnCrossedMeteor(msg);            break; }
 		}
 	}
 
 	// ── Helpers de red ────────────────────────────────────────────────────
 
-	private void updateRemotePosition(Player remote, GameMessage msg, boolean invert) {
+	private void updateRemotePosition(Player remote, GameMessage msg) {
 		double x            = Double.parseDouble(msg.data[0]);
 		double y            = Double.parseDouble(msg.data[1]);
 		double ang          = Double.parseDouble(msg.data[2]);
@@ -194,8 +265,7 @@ public class GameState extends State implements NetworkObserver {
 		double vx   = Double.parseDouble(msg.data[2]);
 		double vy   = Double.parseDouble(msg.data[3]);
 		double ang  = Double.parseDouble(msg.data[4]);
-		double newX = side.equals("RIGHT") ? 0
-				: Constants.WIDTH - Assets.player.getWidth();
+		double newX = side.equals("RIGHT") ? 0 : Constants.WIDTH - Assets.player.getWidth();
 		remote.setPosition(new Vector2D(newX, y));
 		remote.setVelocity(new Vector2D(vx, vy));
 		remote.setAngle(ang);
@@ -235,6 +305,7 @@ public class GameState extends State implements NetworkObserver {
 		Meteor m = new Meteor(new Vector2D(newX, y), new Vector2D(vx, vy),
 				1.0, tex, this, size);
 		m.setUdpClient(udpClient);
+		m.setTransferred(true); // ← no da puntos al ser destruido
 		synchronized (objectsToAdd) { objectsToAdd.add(m); }
 	}
 
@@ -260,16 +331,25 @@ public class GameState extends State implements NetworkObserver {
 			if (!anim.isRunning()) { explosions.remove(i--); }
 		}
 
+		// Lugar 1 — cuando gameOver termina:
 		if (gameOver && !gameOverTimer.isRunning()) {
 			try {
 				ArrayList<ScoreData> dataList = JSONParser.readFile();
-				dataList.add(new ScoreData(score));
+				dataList.add(new ScoreData(nombreJ1 + " y " + nombreJ2, score));
 				JSONParser.writeFile(dataList);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			if (udpClient != null) udpClient.stop();
-			State.changeState(new MenuState());
+
+			if (udpClient != null) {
+				udpClient.stop();
+				udpClient = null;
+			}
+			NetworkConfig.reset();
+
+			long tiempo = (System.currentTimeMillis() - tiempoInicio) / 1000;
+			// Mostrar WinnerState con game over en vez de ir directo al menú
+			State.changeState(new WinnerState("GAME OVER", score, scoreRival, tiempo));
 		}
 
 		if (!ufoSpawner.isRunning()) {
@@ -277,6 +357,33 @@ public class GameState extends State implements NetworkObserver {
 			spawnUfo();
 		}
 
+		// Enviar derrota con el score final después de 200ms
+		// En el bloque pendingLoss en update(), antes de changeState:
+		if (pendingLoss && System.currentTimeMillis() - tiempoPerdida > 500) {
+			pendingLoss = false;
+			long tiempo = (System.currentTimeMillis() - tiempoInicio) / 1000;
+
+			// Enviar mi score final al ganador
+			if (udpClient != null)
+				udpClient.send(new GameMessage(MessageType.WINNER,
+						String.valueOf(score)));
+
+			// Esperar más tiempo para recibir el SCORE_UPDATE del ganador con su bonus
+			try { Thread.sleep(400); } catch (InterruptedException ignored) {}
+
+			try {
+				ArrayList<ScoreData> dataList = JSONParser.readFile();
+				dataList.add(new ScoreData(nombreJ1 + " y " + nombreJ2, score));
+				if (dataList.size() > 10) dataList = new ArrayList<>();
+				JSONParser.writeFile(dataList);
+			} catch (Exception e) { e.printStackTrace(); }
+
+			if (udpClient != null) { udpClient.stop(); udpClient = null; }
+			NetworkConfig.reset();
+
+			State.changeState(new WinnerState(
+					"El equipo rival gana", score, scoreRival, tiempo));
+		}
 		gameOverTimer.update();
 		ufoSpawner.update();
 
@@ -292,6 +399,9 @@ public class GameState extends State implements NetworkObserver {
 		score += value;
 		messages.add(new Message(position, true, "+" + value + " score",
 				Color.WHITE, false, Assets.fontMed));
+		if (udpClient != null)
+			udpClient.send(new GameMessage(MessageType.SCORE_UPDATE,
+					String.valueOf(score)));
 	}
 
 	public void divideMeteor(Meteor meteor) {
@@ -342,6 +452,18 @@ public class GameState extends State implements NetworkObserver {
 						Assets.exp[0].getHeight() / 2))));
 	}
 
+	/**
+	 * Retorna las vidas restantes de un jugador específico.
+	 *
+	 * @param who el jugador a consultar
+	 * @return vidas restantes, 0 si no tiene más
+	 */
+	public int getLives(Player who) {
+		if (who == player)  return Math.max(lives1, 0);
+		if (who == player2) return Math.max(lives2, 0);
+		return 0;
+	}
+
 	private void spawnUfo() {
 		int rand = (int)(Math.random() * 2);
 		double x = rand == 0 ? Math.random() * Constants.WIDTH : Constants.WIDTH;
@@ -376,49 +498,35 @@ public class GameState extends State implements NetworkObserver {
 					(int) anim.getPosition().getX(),
 					(int) anim.getPosition().getY(), null);
 		}
-		drawScore(g);
-		drawLives(g);
+		drawHUD(g);
 	}
 
-	private void drawScore(Graphics g) {
-		Vector2D pos = new Vector2D(850, 25);
-		String s = Integer.toString(score);
-		for (int i = 0; i < s.length(); i++) {
-			g.drawImage(Assets.numbers[Integer.parseInt(s.substring(i, i + 1))],
-					(int) pos.getX(), (int) pos.getY(), null);
-			pos.setX(pos.getX() + 20);
-		}
-	}
+	/**
+	 * Dibuja el HUD completo: vidas con nombres, puntaje y tiempo de partida.
+	 */
+	private void drawHUD(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.setFont(Assets.fontMed);
 
-	private void drawLives(Graphics g) {
-		Vector2D lp = new Vector2D(25, 25);
-		g.drawImage(Assets.life, (int) lp.getX(), (int) lp.getY(), null);
-		g.drawImage(Assets.numbers[10], (int) lp.getX() + 40, (int) lp.getY() + 5, null);
+		// Puntaje local
+		g2d.setColor(Color.WHITE);
+		g2d.drawString("Score: " + score, 850, 25);
 
-		// Vidas jugador 1
-		if (lives1 > 0) {
-			String s1 = Integer.toString(lives1);
-			Vector2D pos = new Vector2D(lp.getX(), lp.getY());
-			for (int i = 0; i < s1.length(); i++) {
-				int n = Integer.parseInt(s1.substring(i, i + 1));
-				g.drawImage(Assets.numbers[n], (int) pos.getX() + 60, (int) pos.getY() + 5, null);
-				pos.setX(pos.getX() + 20);
-			}
-		}
+		// Tiempo de partida
+		long seg = (System.currentTimeMillis() - tiempoInicio) / 1000;
+		g2d.setColor(Color.GRAY);
+		g2d.drawString(seg / 60 + "m " + seg % 60 + "s",
+				Constants.WIDTH / 2 - 30, 25);
 
-		// Vidas jugador 2 (un poco más abajo)
-		Vector2D lp2 = new Vector2D(25, 55);
-		g.drawImage(Assets.life, (int) lp2.getX(), (int) lp2.getY(), null);
-		g.drawImage(Assets.numbers[10], (int) lp2.getX() + 40, (int) lp2.getY() + 5, null);
-		if (lives2 > 0) {
-			String s2 = Integer.toString(lives2);
-			Vector2D pos = new Vector2D(lp2.getX(), lp2.getY());
-			for (int i = 0; i < s2.length(); i++) {
-				int n = Integer.parseInt(s2.substring(i, i + 1));
-				g.drawImage(Assets.numbers[n], (int) pos.getX() + 60, (int) pos.getY() + 5, null);
-				pos.setX(pos.getX() + 20);
-			}
-		}
+		// Vidas equipo local con nombres reales
+		g2d.setColor(Color.CYAN);
+		g2d.drawString(nombreJ1 + ": " + Math.max(lives1, 0) + " vidas", 25, 30);
+		g2d.drawString(nombreJ2 + ": " + Math.max(lives2, 0) + " vidas", 25, 55);
+
+		// Vidas equipo rival
+		g2d.setColor(Color.ORANGE);
+		g2d.drawString(nombreE1 + ": " + Math.max(livesEnemy1, 0) + " vidas", 25, 95);
+		g2d.drawString(nombreE2 + ": " + Math.max(livesEnemy2, 0) + " vidas", 25, 120);
 	}
 
 	public ArrayList<MovingObject> getMovingObjects() { return movingObjects; }
@@ -426,16 +534,26 @@ public class GameState extends State implements NetworkObserver {
 	public Player                  getPlayer()        { return player; }
 
 	public boolean subtractLife(Player who) {
-		if (who == player) {
-			lives1--;
-			// Game over solo si los DOS están en 0
-			if (lives1 <= 0 && lives2 <= 0) gameOver();
-			return lives1 > 0; // puede este jugador respawnear?
-		} else {
-			lives2--;
-			if (lives1 <= 0 && lives2 <= 0) gameOver();
-			return lives2 > 0;
+		if (who == player) lives1--;
+		else               lives2--;
+
+		boolean localAlive  = lives1 > 0 || lives2 > 0;
+		boolean remoteAlive = livesEnemy1 > 0 || livesEnemy2 > 0;
+
+		// Avisar al otro PC que uno de nuestros jugadores perdió una vida
+		if (udpClient != null)
+			udpClient.send(new GameMessage(MessageType.ENEMY_DIED,
+					who == player ? "1" : "2",
+					String.valueOf(score)));
+
+		if (!localAlive && !remoteAlive) {
+			gameOver();
+		} else if (!localAlive) {
+			pendingLoss   = true;
+			tiempoPerdida = System.currentTimeMillis();
 		}
+
+		return who == player ? lives1 > 0 : lives2 > 0;
 	}
 
 	public void gameOver() {

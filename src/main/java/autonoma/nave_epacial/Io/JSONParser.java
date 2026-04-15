@@ -10,13 +10,27 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+/**
+ * La clase JSONParser se encarga de la gestión de persistencia de datos para el juego.
+ * Proporciona métodos estáticos para leer y escribir archivos en formato JSON,
+ * permitiendo almacenar el historial de puntuaciones (High Scores) de manera local.
+ * * @version 1.0
+ */
 public class JSONParser {
+
+    /**
+     * Lee el archivo de puntuaciones definido en las constantes del juego y
+     * transforma el contenido JSON en una lista de objetos ScoreData.
+     * * @return Una lista {@link ArrayList} de {@link ScoreData} con los registros encontrados.
+     * Si el archivo no existe o está vacío, devuelve una lista vacía.
+     * @throws FileNotFoundException Si ocurre un error al intentar acceder al archivo físico.
+     */
     public static ArrayList<ScoreData> readFile() throws FileNotFoundException {
         ArrayList<ScoreData> dataList = new ArrayList<>();
 
-        File file=new File(Constants.SCORE_PATH);
+        File file = new File(Constants.SCORE_PATH);
 
-        if (!file.exists()||file.length()==0){
+        if (!file.exists() || file.length() == 0){
             return dataList;
         }
 
@@ -34,6 +48,12 @@ public class JSONParser {
         return dataList;
     }
 
+    /**
+     * Serializa una lista de objetos ScoreData a formato JSON y la guarda en el disco duro.
+     * Si las carpetas del destino no existen, el método intenta crearlas automáticamente.
+     * * @param dataList La lista de objetos {@link ScoreData} que se desea persistir.
+     * @throws IOException Si ocurre un error durante la creación del archivo o el proceso de escritura.
+     */
     public static void writeFile (ArrayList<ScoreData> dataList) throws IOException {
         File outputFile = new File(Constants.SCORE_PATH);
         outputFile.getParentFile().mkdirs();
